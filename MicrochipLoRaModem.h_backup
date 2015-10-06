@@ -13,7 +13,7 @@ Original author: Jan Bogaerts (2015)
 //#include <stream>
 
 //this class represents the ATT cloud platform.
-class EmbitLoRaModem: public LoRaModem
+class MicrochipLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
@@ -34,7 +34,7 @@ class EmbitLoRaModem: public LoRaModem
 		//start the modem 
 		void Start();
 		//send a data packet to the server
-		bool Send(LoraPacket* packet);
+		void Send(LoraPacket* packet);
 		//process any incoming packets from the modem
 		 void ProcessIncoming();
 	private:
@@ -46,6 +46,8 @@ class EmbitLoRaModem: public LoRaModem
 		//reads a packet from the modem and returns the value of the byte at the specified index position
 		unsigned char ReadPacket(unsigned char index);
 		
+		
+		bool expectOK();
 		Stream* _stream;					//the stream to communicate with the lora modem.
 };
 

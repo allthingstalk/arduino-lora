@@ -38,7 +38,7 @@ void ATTDevice::Send(String value, short id)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	_modem->Send(&_data);
+	while(_modem->Send(&_data) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 

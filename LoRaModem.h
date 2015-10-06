@@ -30,7 +30,7 @@ class LoRaModem
 		//start the modem 
 		virtual void Start() = 0;
 		//send a data packet to the server
-		virtual void Send(LoraPacket* packet) = 0;
+		virtual bool Send(LoraPacket* packet) = 0;
 		//process any incoming packets from the modem
 		virtual void ProcessIncoming() = 0;
 };

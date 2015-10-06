@@ -14,7 +14,20 @@ Original author: Jan Bogaerts (2015)
 #include "LoRaModem.h"
 #include "LoraPacket.h"
 
-#define BUTTON 1
+#define BINARY_SENSOR 1
+#define BINARY_TILT_SENSOR 2
+#define PUSH_BUTTON 3
+#define DOOR_SENSOR 4
+#define TEMPERATURE_SENSOR 5
+#define LIGHT_SENSOR 6
+#define PIR_SENSOR 7
+#define ACCELEROMETER 8
+#define GPS 9
+#define PRESURE_SENSOR 10
+#define HUMIDITY_SENSOR 11
+#define LOUDNESS_SENSOR 12
+#define AIR_QUALITY_SENSOR 13
+#define BATTERY_LEVEL 14
 
 //this class represents the ATT cloud platform.
 class ATTDevice

@@ -65,7 +65,7 @@ void EmbitLoRaModem::Start()
 	ReadPacket();
 }
 
-void EmbitLoRaModem::Send(LoraPacket* packet)
+bool EmbitLoRaModem::Send(LoraPacket* packet)
 {
 	unsigned char length = packet->Write(sendBuffer);
 	Serial.println("Sending payload: ");
@@ -76,8 +76,13 @@ void EmbitLoRaModem::Send(LoraPacket* packet)
   
 	SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), sendBuffer, length);
 	unsigned char result = ReadPacket(3);
-	if(result != 0)
+	if(result != 0){
 		Serial.println("Failed to send packet");
+		return false;
+	}
+	else
+		return true;
+	
 }
 
 void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length)
