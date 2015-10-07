@@ -35,9 +35,13 @@ void setup()
   Serial1.begin(SERIAL1_BAUD);
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
+  
+  pinMode(LED1, OUTPUT);									//indicate that the device is running
+  digitalWrite(LED1, HIGH);
 }
 
 bool sensorVal = false;							        //only send every x amount of time.
+bool firstVal = true;
 
 void loop() 
 {
@@ -46,14 +50,15 @@ void loop()
   //accelemeter.getAcceleration(&ax,&ay,&az);
   //bool sensorRead2 = digitalRead(Sensor2);			        // read status Digital Sensor 
   bool res = sensorRead;// | abs((int)ax) > 0 | abs((int)ay) > 0 | abs((int)az); //!(sensorRead | sensorRead2);
-  if (sensorVal != res) 				                // verify if value has changed
+  if (sensorVal != res || firstVal == true) 				                // verify if value has changed
   {
 	digitalWrite(Sensor2, 1);
     sensorVal = res;
+	firstVal = false;
     if (res >= 1)
-      Device.Send(true, BUTTON);
+      Device.Send(true, BINARY_SENSOR);
     else
-      Device.Send(false, BUTTON);
+      Device.Send(false, BINARY_SENSOR);
 	  digitalWrite(Sensor2, 0);
   }
   delay(100);

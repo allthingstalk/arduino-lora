@@ -77,7 +77,7 @@ void ATTDevice::Send(short id)
 //loads a bool data value into the data packet that is being prepared to send to the
 //cloud server.
 //the packet is sent after calling Send(id_of_sensor)
-void ATTDevice::SendPartial(bool value)
+void ATTDevice::Queue(bool value)
 {
 	_data.Add(value);
 }
@@ -85,7 +85,7 @@ void ATTDevice::SendPartial(bool value)
 //loads a bool data value into the data packet that is being prepared to send to the
 //cloud server.
 //the packet is sent after calling Send(id_of_sensor)
-void ATTDevice::SendPartial(short value)
+void ATTDevice::Queue(short value)
 {
 	_data.Add(value);
 }
@@ -93,7 +93,7 @@ void ATTDevice::SendPartial(short value)
 //loads a string data value into the data packet that is being prepared to send to the
 //cloud server.
 //the packet is sent after calling Send(id_of_sensor)
-void ATTDevice::SendPartial(String value)
+void ATTDevice::Queue(String value)
 {
 	_data.Add(value);
 }
@@ -101,7 +101,7 @@ void ATTDevice::SendPartial(String value)
 //loads a float data value into the data packet tha is being prepared to send to the
 //cloud server.
 //the packet is sent after calling Send(id_of_sensor)
-void ATTDevice::SendPartial(float value)
+void ATTDevice::Queue(float value)
 {
 	_data.Add(value);
 }

@@ -12,12 +12,29 @@ Original author: Jan Bogaerts (2015)
 #include "LoraPacket.h"
 //#include <stream>
 
+#define DEFAULT_PAYLOAD_SIZE 52
+#define PORT 1
+#define DEFAULT_INPUT_BUFFER_SIZE 96
+#define DEFAULT_RECEIVED_PAYLOAD_BUFFER_SIZE 64
+#define DEFAULT_TIMEOUT 120
+#define RECEIVE_TIMEOUT 60000
+#define MAX_SEND_RETRIES 10
+
+
+enum MacTransmitErrorCodes
+{
+	NoError = 0,
+	NoResponse = 1,
+	Timeout = 2,
+	TransmissionFailure = 3
+};
+
 //this class represents the ATT cloud platform.
 class MicrochipLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
-		EmbitLoRaModem(Stream* stream);
+		MicrochipLoRaModem(Stream* stream);
 		//stop the modem.
 		void Stop();
 		//set the modem in LoRaWan mode (vs private networks)
@@ -34,21 +51,25 @@ class MicrochipLoRaModem: public LoRaModem
 		//start the modem 
 		void Start();
 		//send a data packet to the server
-		void Send(LoraPacket* packet);
+		bool Send(LoraPacket* packet);
 		//process any incoming packets from the modem
 		 void ProcessIncoming();
 	private:
-		void printHex(unsigned char hex);
-		void sendByte(unsigned char data);
-		void SendPacket(unsigned char* data, uint16_t length);
-		void SendPacket(unsigned char* data, uint16_t length, unsigned char* data2, uint16_t length2);
-		void ReadPacket();
-		//reads a packet from the modem and returns the value of the byte at the specified index position
-		unsigned char ReadPacket(unsigned char index);
-		
-		
-		bool expectOK();
 		Stream* _stream;					//the stream to communicate with the lora modem.
+		char inputBuffer[DEFAULT_INPUT_BUFFER_SIZE + 1];
+	    char receivedPayloadBuffer[DEFAULT_RECEIVED_PAYLOAD_BUFFER_SIZE + 1];
+		unsigned char lookupMacTransmitError(const char* error);
+		unsigned char onMacRX();
+		void printHex(unsigned char hex);
+		unsigned short readLn(char* buf, unsigned short bufferSize, unsigned short start = 0);
+		unsigned short readLn() { return readLn(this->inputBuffer, DEFAULT_INPUT_BUFFER_SIZE); };
+		bool expectOK();
+		bool expectString(const char* str, unsigned short timeout = DEFAULT_TIMEOUT);
+		
+		bool setMacParam(const char* paramName, const unsigned char* paramValue, unsigned short size);
+		bool setMacParam(const char* paramName, unsigned char paramValue);
+		bool setMacParam(const char* paramName, const char* paramValue);
+		unsigned char macTransmit(const char* type, const unsigned char* payload, unsigned char size);
 };
 
 #endif

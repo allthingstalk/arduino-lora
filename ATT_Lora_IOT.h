@@ -62,22 +62,22 @@ class ATTDevice
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.
 		//the packet is sent after calling Send(id_of_sensor)
-		void SendPartial(bool value);
+		void Queue(bool value);
 		
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.
 		//the packet is sent after calling Send(id_of_sensor)
-		void SendPartial(short value);
+		void Queue(short value);
 		
 		//loads a string data value into the data packet that is being prepared to send to the
 		//cloud server.
 		//the packet is sent after calling Send(id_of_sensor)
-		void SendPartial(String value);
+		void Queue(String value);
 		
 		//loads a float data value into the data packet tha is being prepared to send to the
 		//cloud server.
 		//the packet is sent after calling Send(id_of_sensor)
-		void SendPartial(float value);
+		void Queue(float value);
 	
 		//check for any new mqtt messages.
 		void Process();
