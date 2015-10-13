@@ -5,16 +5,20 @@
 #include "EmbitLoRaModem.h"
 
 #define PORT 0x01
+#define SERIAL_BAUD 9600
 
 #define PACKET_TIME_OUT 45000
 
 unsigned char CMD_STOP[1] = { 0x30 };
 unsigned char CMD_LORA_PRVNET[2] = { 0x25, 0xA0 };
+unsigned char CMD_LORA_PRVNET_NO_ADR[2] = { 0x25, 0x80 };
 unsigned char CMD_DEV_ADDR[1] = { 0x21 };
 unsigned char CMD_APPSKEY[2] = { 0x26, 0x11};
 unsigned char CMD_NWKSKEY[2] = { 0x26, 0x10};
 unsigned char CMD_START[1] = { 0x31 };
 unsigned char CMD_SEND_PREFIX[4] = { 0x50, 0x0C, 0x00, PORT }; 
+unsigned char CMD_SEND_PREFIX_NO_ACK[4] = { 0x50, 0x08, 0x00, PORT }; 
+
 
 unsigned char sendBuffer[52];
 
@@ -23,6 +27,11 @@ EmbitLoRaModem::EmbitLoRaModem(Stream* stream)
 	_stream = stream;
 }
 
+unsigned int EmbitLoRaModem::getDefaultBaudRate() 
+{ 
+	return SERIAL_BAUD; 
+};
+
 void EmbitLoRaModem::Stop()
 {
 	Serial.println("Sending the network stop command");
@@ -30,10 +39,13 @@ void EmbitLoRaModem::Stop()
 	ReadPacket();
 }
 
-void EmbitLoRaModem::SetLoRaWan()
+void EmbitLoRaModem::SetLoRaWan(bool adr = true)
 {
 	Serial.println("Setting the network preferences to LoRaWAN private network");
-	SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET));
+	if(adr == true)
+		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET));
+	else
+		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET_NO_ADR));
 	ReadPacket();
 }
 
@@ -65,7 +77,7 @@ void EmbitLoRaModem::Start()
 	ReadPacket();
 }
 
-bool EmbitLoRaModem::Send(LoraPacket* packet)
+bool EmbitLoRaModem::Send(LoraPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(sendBuffer);
 	Serial.println("Sending payload: ");
@@ -74,7 +86,10 @@ bool EmbitLoRaModem::Send(LoraPacket* packet)
 	}
 	Serial.println();
   
-	SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), sendBuffer, length);
+	if(ack == true)
+		SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), sendBuffer, length);
+	else
+		SendPacket(CMD_SEND_PREFIX_NO_ACK, sizeof(CMD_SEND_PREFIX_NO_ACK), sendBuffer, length);
 	unsigned char result = ReadPacket(3);
 	if(result != 0){
 		Serial.println("Failed to send packet");

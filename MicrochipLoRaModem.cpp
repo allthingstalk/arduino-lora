@@ -11,6 +11,12 @@
 #define PACKET_TIME_OUT 45000
 
 
+typedef struct StringEnumPair
+{
+	const char* stringValue;
+	uint8_t enumValue;
+} StringEnumPair;
+
 unsigned char microchipSendBuffer[DEFAULT_PAYLOAD_SIZE];
 
 MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream)
@@ -28,10 +34,16 @@ void MicrochipLoRaModem::Stop()
 	expectString(STR_DEVICE_TYPE);
 }
 
-void MicrochipLoRaModem::SetLoRaWan()
+void MicrochipLoRaModem::SetLoRaWan(bool adr)
 {
-	//should be on by default
+	//lorawan should be on by default (no private supported)
+	setMacParam(STR_ADR, BOOL_TO_ONOFF(adr));			//set to adaptive variable rate transmission
 }
+
+unsigned int MicrochipLoRaModem::getDefaultBaudRate() 
+{ 
+	return 57600; 
+};
 
 void MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
 {
@@ -54,9 +66,7 @@ void MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 void MicrochipLoRaModem::Start()
 {
 	Serial.println("Sending the network start commands");
-	
-	setMacParam(STR_ADR, BOOL_TO_ONOFF(true));			//set to adaptive variable rate transmission
-	
+		
 	_stream->print(STR_CMD_JOIN);
 	_stream->print(STR_ABP);
 	_stream->print(CRLF);
@@ -67,7 +77,7 @@ void MicrochipLoRaModem::Start()
 		Serial.println("failure");
 }
 
-bool MicrochipLoRaModem::Send(LoraPacket* packet)
+bool MicrochipLoRaModem::Send(LoraPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(microchipSendBuffer);
 	Serial.println("Sending payload: ");
@@ -75,11 +85,16 @@ bool MicrochipLoRaModem::Send(LoraPacket* packet)
 		printHex(microchipSendBuffer[i]);
 	}
 	Serial.println();
-	
-	if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
-		Serial.println("[sendReqAck] Non-fatal error: setting number of retries failed.");
-	
-	unsigned char result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length);
+		
+	unsigned char result;
+	if(ack == true)
+	{
+		if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
+			Serial.println("[send] Non-fatal error: setting number of retries failed.");
+		result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length);
+	}
+	else
+		result = macTransmit(STR_UNCONFIRMED, microchipSendBuffer, length);
 	if(result != 0)
 		Serial.println("Failed to send packet");
 	return result;
@@ -110,13 +125,13 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 	unsigned long timeout = millis() + RECEIVE_TIMEOUT;
 	while (millis() < timeout)
 	{
-		Serial.println(".");
+		Serial.print(".");
 		if (readLn() > 0)
 		{
-			Serial.println(".");
-			Serial.println("(");
-			Serial.println(this->inputBuffer);
-			Serial.println(")");
+			Serial.print(".");
+			Serial.print("(");
+			Serial.print(this->inputBuffer);
+			Serial.print(")");
 
 			if (strstr(this->inputBuffer, " ") != NULL) // to avoid double delimiter search 
 			{
@@ -140,6 +155,47 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 	}
 	Serial.println("Timed-out waiting for a response!");
 	return Timeout;
+}
+
+uint8_t MicrochipLoRaModem::lookupMacTransmitError(const char* error)
+{
+	Serial.print("[lookupMacTransmitError]: ");
+	Serial.println(error);
+
+	if (error[0] == 0)
+	{
+		Serial.println("[lookupMacTransmitError]: The string is empty!");
+		return NoResponse;
+	}
+
+	StringEnumPair errorTable[] =
+	{
+		{ STR_RESULT_OK, NoError },
+		{ STR_RESULT_INVALID_PARAM, TransmissionFailure },
+		{ STR_RESULT_NOT_JOINED, TransmissionFailure },
+		{ STR_RESULT_NO_FREE_CHANNEL, TransmissionFailure },
+		{ STR_RESULT_SILENT, TransmissionFailure },
+		{ STR_RESULT_FRAME_COUNTER_ERROR, TransmissionFailure },
+		{ STR_RESULT_BUSY, TransmissionFailure },
+		{ STR_RESULT_MAC_PAUSED, TransmissionFailure },
+		{ STR_RESULT_INVALID_DATA_LEN, TransmissionFailure },
+		{ STR_RESULT_MAC_ERROR, TransmissionFailure },
+		{ STR_RESULT_MAC_TX_OK, NoError }
+	};
+
+	for (StringEnumPair* p = errorTable; p->stringValue != NULL; ++p) 
+	{
+		if (strcmp(p->stringValue, error) == 0)
+		{
+			Serial.print("[lookupMacTransmitError]: found ");
+			Serial.println(p->enumValue);
+
+			return p->enumValue;
+		}
+	}
+
+	Serial.println("[lookupMacTransmitError]: not found!");
+	return NoResponse;
 }
 
 
@@ -176,7 +232,10 @@ bool MicrochipLoRaModem::expectString(const char* str, unsigned short timeout)
 unsigned short MicrochipLoRaModem::readLn(char* buffer, unsigned short size, unsigned short start)
 {
 	int len = _stream->readBytesUntil('\n', buffer + start, size);
-	this->inputBuffer[start + len - 1] = 0; // bytes until \n always end with \r, so get rid of it (-1)
+	if(len > 0)
+		this->inputBuffer[start + len - 1] = 0; // bytes until \n always end with \r, so get rid of it (-1)
+	else
+		this->inputBuffer[start] = 0;
 
 	return len;
 }
@@ -189,9 +248,9 @@ bool MicrochipLoRaModem::expectOK()
 // paramName should include the trailing space
 bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char* paramValue, unsigned short size)
 {
-	//Serial.print("[setMacParam] ");
-	//Serial.print(paramName);
-	//Serial.print("= [array]");
+	Serial.print("[setMacParam] ");
+	Serial.print(paramName);
+	Serial.print("= [array]");
 
 	_stream->print(STR_CMD_SET);
 	_stream->print(paramName);
@@ -210,10 +269,10 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char*
 // paramName should include the trailing space
 bool MicrochipLoRaModem::setMacParam(const char* paramName, uint8_t paramValue)
 {
-	//Serial.print("[setMacParam] ");
-	//Serial.print(paramName);
-	//Serial.print("= ");
-	//Serial.println(paramValue);
+	Serial.print("[setMacParam] ");
+	Serial.print(paramName);
+	Serial.print("= ");
+	Serial.println(paramValue);
 
 	_stream->print(STR_CMD_SET);
 	_stream->print(paramName);

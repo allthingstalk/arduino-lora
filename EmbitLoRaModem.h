@@ -18,10 +18,13 @@ class EmbitLoRaModem: public LoRaModem
 	public:
 		//create the object
 		EmbitLoRaModem(Stream* stream);
+		// Returns the required baudrate for the device
+		unsigned int getDefaultBaudRate();
 		//stop the modem.
 		void Stop();
 		//set the modem in LoRaWan mode (vs private networks)
-		void SetLoRaWan();
+		//adr = adaptive data rate. true= use, false = none adaptive data rate
+		void SetLoRaWan(bool adr = true);
 		//assign a device address to the modem
 		//devAddress must be 4 bytes long
 		void SetDevAddress(unsigned char* devAddress);
@@ -34,7 +37,7 @@ class EmbitLoRaModem: public LoRaModem
 		//start the modem 
 		void Start();
 		//send a data packet to the server
-		bool Send(LoraPacket* packet);
+		bool Send(LoraPacket* packet, bool ack = true);
 		//process any incoming packets from the modem
 		 void ProcessIncoming();
 	private:

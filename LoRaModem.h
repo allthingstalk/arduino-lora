@@ -14,10 +14,12 @@ Original author: Jan Bogaerts (2015)
 class LoRaModem
 {
 	public:
+		// Returns the required baudrate for the device
+		virtual unsigned int getDefaultBaudRate() = 0;
 		//stop the modem.
 		virtual void Stop() = 0;
 		//set the modem in LoRaWan mode (vs private networks)
-		virtual void SetLoRaWan() = 0;
+		virtual void SetLoRaWan(bool adr = true) = 0;
 		//assign a device address to the modem
 		//devAddress must be 4 bytes long
 		virtual void SetDevAddress(unsigned char* devAddress) = 0;
@@ -30,7 +32,8 @@ class LoRaModem
 		//start the modem 
 		virtual void Start() = 0;
 		//send a data packet to the server
-		virtual bool Send(LoraPacket* packet) = 0;
+		//ack = true -> request ack
+		virtual bool Send(LoraPacket* packet, bool ack = true) = 0;
 		//process any incoming packets from the modem
 		virtual void ProcessIncoming() = 0;
 };

@@ -11,11 +11,11 @@ ATTDevice::ATTDevice(LoRaModem* modem)
 	_modem = modem;
 }
 
-//connect with the http server
-bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey)
+//connect with the to the lora gateway
+bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr = true)
 {
 	_modem->Stop();								//stop any previously running modems
-	_modem->SetLoRaWan();						//switch to LoRaWan mode instead of peer to peer
+	_modem->SetLoRaWan(adr);						//switch to LoRaWan mode instead of peer to peer
 	_modem->SetDevAddress(devAddress);
 	_modem->SetAppKey(appKey);
 	_modem->SetNWKSKey(nwksKey);
@@ -29,48 +29,47 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 //nwksKey = 16 byte array
 void ATTDevice::Process()
 {
-	_modem->Send(&_data);
 }
 
 
 //send a data value to the cloud server for the sensor with the specified id.
-void ATTDevice::Send(String value, short id)
+void ATTDevice::Send(String value, short id, bool ack = true)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data) == false);
+	while(_modem->Send(&_data, ack) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(bool value, short id)
+void ATTDevice::Send(bool value, short id, bool ack = true)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	_modem->Send(&_data);
+	while(_modem->Send(&_data, ack) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(short value, short id)
+void ATTDevice::Send(short value, short id, bool ack = true)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	_modem->Send(&_data);
+	while(_modem->Send(&_data, ack) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(float value, short id)
+void ATTDevice::Send(float value, short id, bool ack = true)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	_modem->Send(&_data);
+	while(_modem->Send(&_data, ack) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
 //sends the previously built complex data packet to the cloud for the sensor with the specified
-void ATTDevice::Send(short id)
+void ATTDevice::Send(short id, bool ack = true)
 {
 	_data.SetId(id);
-	_modem->Send(&_data);
+	while(_modem->Send(&_data, ack) == false);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 

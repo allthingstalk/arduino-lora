@@ -45,19 +45,24 @@ class ATTDevice
 		//void AddAsset(short id, String name, String description, bool isActuator, String type);
 		
 		//send a bool data value to the cloud server for the sensor with the specified id.
-		void Send(bool value, short id);
+		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		void Send(bool value, short id, bool ack = true);
 		
 		//send an integer value to the cloud server for the sensor with the specified id.
-		void Send(short value, short id);
+		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		void Send(short value, short id, bool ack = true);
 		
 		//send a string data value to the cloud server for the sensor with the specified id.
-		void Send(String value, short id);
+		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		void Send(String value, short id, bool ack = true);
 		
 		//send a gloat data value to the cloud server for the sensor with the specified id.
-		void Send(float value, short id);
+		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		void Send(float value, short id, bool ack = true);
 		
 		//sends the previously built complex data packet to the cloud for the sensor with the specified
-		void Send(short id);
+		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		void Send(short id, bool ack = true);
 		
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.
