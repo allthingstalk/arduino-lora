@@ -39,7 +39,7 @@ void EmbitLoRaModem::Stop()
 	ReadPacket();
 }
 
-void EmbitLoRaModem::SetLoRaWan(bool adr = true)
+void EmbitLoRaModem::SetLoRaWan(bool adr)
 {
 	Serial.println("Setting the network preferences to LoRaWAN private network");
 	if(adr == true)

@@ -38,7 +38,7 @@ class ATTDevice
 		
 		/*connect with the http server (call first)
 		returns: true when subscribe was successful, otherwise false.*/
-		bool Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey);
+		bool Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr = true);
 		
 		//create or update the specified asset. (call after connecting)
 		//note: after this call, the name will be in lower case, so that it can be used to compare with the topic of incomming messages.

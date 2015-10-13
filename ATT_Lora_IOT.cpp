@@ -12,7 +12,7 @@ ATTDevice::ATTDevice(LoRaModem* modem)
 }
 
 //connect with the to the lora gateway
-bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr = true)
+bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr)
 {
 	_modem->Stop();								//stop any previously running modems
 	_modem->SetLoRaWan(adr);						//switch to LoRaWan mode instead of peer to peer
@@ -33,7 +33,7 @@ void ATTDevice::Process()
 
 
 //send a data value to the cloud server for the sensor with the specified id.
-void ATTDevice::Send(String value, short id, bool ack = true)
+void ATTDevice::Send(String value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
@@ -41,7 +41,7 @@ void ATTDevice::Send(String value, short id, bool ack = true)
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(bool value, short id, bool ack = true)
+void ATTDevice::Send(bool value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
@@ -49,7 +49,7 @@ void ATTDevice::Send(bool value, short id, bool ack = true)
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(short value, short id, bool ack = true)
+void ATTDevice::Send(short value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
@@ -57,7 +57,7 @@ void ATTDevice::Send(short value, short id, bool ack = true)
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
-void ATTDevice::Send(float value, short id, bool ack = true)
+void ATTDevice::Send(float value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
@@ -66,7 +66,7 @@ void ATTDevice::Send(float value, short id, bool ack = true)
 }
 
 //sends the previously built complex data packet to the cloud for the sensor with the specified
-void ATTDevice::Send(short id, bool ack = true)
+void ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
 	while(_modem->Send(&_data, ack) == false);
