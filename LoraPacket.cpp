@@ -29,6 +29,8 @@ unsigned char LoraPacket::Write(unsigned char* result)
 			curPos += len;
 		}
 	}
+	else if(nrFloats > 0 || stringPos > 0)
+		result[curPos++] = 0;
 	if(nrFloats > 0)
 	{
 		result[curPos++] = nrFloats;
@@ -39,6 +41,8 @@ unsigned char LoraPacket::Write(unsigned char* result)
 			curPos += len;
 		}
 	}
+	else if(stringPos > 0)
+		result[curPos++] = 0;
 	if(stringPos > 0)
 	{	
 		memcpy(result + curPos, stringValues, stringPos);

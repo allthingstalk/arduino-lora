@@ -91,11 +91,13 @@ bool MicrochipLoRaModem::Send(LoraPacket* packet, bool ack)
 	{
 		if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
 			Serial.println("[send] Non-fatal error: setting number of retries failed.");
-		result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length);
+		result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length) == NoError;
 	}
 	else
-		result = macTransmit(STR_UNCONFIRMED, microchipSendBuffer, length);
-	if(result != 0)
+		result = macTransmit(STR_UNCONFIRMED, microchipSendBuffer, length) == NoError;
+	if(result)
+		Serial.println("Successfully sent packet");
+	else
 		Serial.println("Failed to send packet");
 	return result;
 }
@@ -103,8 +105,6 @@ bool MicrochipLoRaModem::Send(LoraPacket* packet, bool ack)
 
 unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned char* payload, unsigned char size)
 {
-	Serial.println("[macTransmit]");
-
 	_stream->print(STR_CMD_MAC_TX);
 	_stream->print(type);
 	_stream->print(PORT);
@@ -203,7 +203,7 @@ uint8_t MicrochipLoRaModem::lookupMacTransmitError(const char* error)
 bool MicrochipLoRaModem::expectString(const char* str, unsigned short timeout)
 {
 	Serial.print("[expectString] expecting ");
-	Serial.print(str);
+	Serial.println(str);
 
 	unsigned long start = millis();
 	while (millis() < start + timeout)
@@ -315,14 +315,15 @@ void MicrochipLoRaModem::printHex(unsigned char hex)
 
 unsigned char MicrochipLoRaModem::onMacRX()
 {
-	Serial.println("[onMacRX]");
 
 	// parse inputbuffer, put payload into packet buffer
 	char* token = strtok(this->inputBuffer, " ");
 
 	// sanity check
-	if (strcmp(token, STR_RESULT_MAC_RX) != 0)
+	if (strcmp(token, STR_RESULT_MAC_RX) != 0){
+	Serial.println("no mac_rx found in result");
 		return NoResponse; // TODO create more appropriate error codes
+	}
 
 	// port
 	token = strtok(NULL, " ");
