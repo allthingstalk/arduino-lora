@@ -23,6 +23,10 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	return true;									//we have created a connection succesfully.
 }
 
+//check for any new mqtt messages.
+//deAddress = 4 byte array
+//appKey = 16 byte array
+//nwksKey = 16 byte array
 void ATTDevice::Process()
 {
 }
