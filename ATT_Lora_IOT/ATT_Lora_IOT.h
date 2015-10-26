@@ -83,8 +83,8 @@ class ATTDevice
 		//cloud server.
 		//the packet is sent after calling Send(id_of_sensor)
 		void Queue(float value);
-	
-		//check for any new mqtt messages.
+		
+		//for future support of actuators
 		void Process();
 		
 	private:	
