@@ -37,7 +37,7 @@ void ATTDevice::Send(String value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false);
+	while(_modem->Send(&_data, ack) == false) delay(1000);		//wait a little before retrying
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -45,7 +45,7 @@ void ATTDevice::Send(bool value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false);
+	while(_modem->Send(&_data, ack) == false)delay(1000);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -53,7 +53,7 @@ void ATTDevice::Send(short value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false);
+	while(_modem->Send(&_data, ack) == false) delay(1000);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -61,7 +61,7 @@ void ATTDevice::Send(float value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false);
+	while(_modem->Send(&_data, ack) == false) delay(1000);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -69,7 +69,7 @@ void ATTDevice::Send(float value, short id, bool ack)
 void ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
-	while(_modem->Send(&_data, ack) == false);
+	while(_modem->Send(&_data, ack) == false) delay(1000);
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 

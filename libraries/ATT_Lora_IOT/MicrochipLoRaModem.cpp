@@ -70,6 +70,10 @@ void MicrochipLoRaModem::Start()
 	_stream->print(STR_CMD_JOIN);
 	_stream->print(STR_ABP);
 	_stream->print(CRLF);
+	
+	Serial.print(STR_CMD_JOIN);
+	Serial.print(STR_ABP);
+	Serial.print(CRLF);
 
 	if(expectOK() && expectString(STR_ACCEPTED))
 		Serial.println("success");
@@ -109,13 +113,23 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 	_stream->print(type);
 	_stream->print(PORT);
 	_stream->print(" ");
+	
+	Serial.print(STR_CMD_MAC_TX);
+	Serial.print(type);
+	Serial.print(PORT);
+	Serial.print(" ");
 
 	for (int i = 0; i < size; ++i)
 	{
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(payload[i]))));
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(payload[i]))));
+		
+		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(payload[i]))));
+		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(payload[i]))));
 	}
 	_stream->print(CRLF);
+	
+	Serial.print(CRLF);
 
 	// TODO lookup error
 	if (!expectOK())
@@ -254,14 +268,20 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char*
 
 	_stream->print(STR_CMD_SET);
 	_stream->print(paramName);
+	Serial.print(STR_CMD_SET);
+	Serial.print(paramName);
 
 	for (unsigned short i = 0; i < size; ++i)
 	{
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(paramValue[i]))));
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(paramValue[i]))));
+		
+		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(paramValue[i]))));
+		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(paramValue[i]))));
 	}
 	
 	_stream->print(CRLF);
+	Serial.print(CRLF);
 
 	return expectOK();
 }
@@ -278,6 +298,11 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, uint8_t paramValue)
 	_stream->print(paramName);
 	_stream->print(paramValue);
 	_stream->print(CRLF);
+	
+	Serial.print(STR_CMD_SET);
+	Serial.print(paramName);
+	Serial.print(paramValue);
+	Serial.print(CRLF);
 
 	return expectOK();
 }
@@ -294,6 +319,11 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const char* paramVal
 	_stream->print(paramName);
 	_stream->print(paramValue);
 	_stream->print(CRLF);
+	
+	Serial.print(STR_CMD_SET);
+	Serial.print(paramName);
+	Serial.print(paramValue);
+	Serial.print(CRLF);
 	
 	return expectOK();
 }

@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map For Sodaq_TPH
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+TPH	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+readTemperature	KEYWORD2
+readTemperatureBMP	KEYWORD2
+readTemperatureSHT	KEYWORD2
+readPressure	KEYWORD2
+readHumidity	KEYWORD2
+
+#######################################
+# Instances (KEYWORD3)
+#######################################
+
+tph	KEYWORD3
+
+#######################################
+# Constants (LITERAL1)
+#######################################
