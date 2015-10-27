@@ -23,14 +23,14 @@ bool sensorVal = false;
 
 void setup() 
 {
-  pinMode(DigitalSensor, INPUT);                     // initialize the digital pin as an input
-  Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());         // init the baud rate of the serial connection so that it's ok for the modem
-  Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
+  pinMode(DigitalSensor, INPUT);               // initialize the digital pin as an input
+  Serial.begin(SERIAL_BAUD);                   // set baud rate of the default serial debug connection
+  Serial1.begin(Modem.getDefaultBaudRate());   // set baud rate of the serial connection between Mbili and LoRa modem
+  Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);  // initialize connection with the AllThingsTalk Developer Cloud
   Serial.println("Ready to send data");
 
   sensorVal = digitalRead(DigitalSensor);
-  SendValue(sensorVal);                              // send initial state
+  SendValue(sensorVal);                        // send initial state
 }
 
 void loop() 
