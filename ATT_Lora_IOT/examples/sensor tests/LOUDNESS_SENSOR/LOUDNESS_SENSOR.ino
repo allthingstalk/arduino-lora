@@ -7,7 +7,7 @@
 #define SERIAL_BAUD 57600
 
 
-#define AnalogSensor A5                                        // Digital Sensor is connected to pin D8 on grove shield 
+#define AnalogSensor A4
 
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
@@ -17,7 +17,7 @@ ATTDevice Device(&Modem);
 
 void setup() 
 {
-  //pinMode(AnalogSensor, INPUT);					            // initialize the digital pin as an input.          
+  pinMode(AnalogSensor, INPUT);					            // initialize the digital pin as an input.          
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);

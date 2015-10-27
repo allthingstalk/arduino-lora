@@ -42,9 +42,9 @@ void loop()
      sensorVal = sensorRead;
 	   //SendValue(sensorRead);
 	   if(sensorVal == true)
-		   Serial.println("door open");
+		   Serial.println("door closed");
 	   else
-		    Serial.println("door closed");
+		    Serial.println("door open");
   }
   delay(100);
 }

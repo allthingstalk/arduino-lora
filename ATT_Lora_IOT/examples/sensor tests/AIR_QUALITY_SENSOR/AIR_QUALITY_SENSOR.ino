@@ -5,7 +5,7 @@
 //www.arduino.cc/en/Guide/Libraries
 
 #include <Wire.h>
-#include "AirQuality.h"
+#include "AirQuality2.h"
 #include"Arduino.h"
 #include "ATT_Lora_IOT.h"
 #include "keys.h"
@@ -15,12 +15,12 @@
 #define SERIAL_BAUD 57600
 
 
-#define AnalogSensor A5                                        // Digital Sensor is connected to pin D8 on grove shield 
+#define AnalogSensor A4
 
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
-AirQuality airqualitysensor;
+AirQuality2 airqualitysensor;
 int value = -1;
 
 void setup() 
@@ -36,7 +36,7 @@ void setup()
 
 void loop() 
 {
-  value = airqualitysensor.slope();
+  value = airqualitysensor.getRawData();
   SendValue();
   delay(3000);
 }
@@ -55,20 +55,3 @@ void serialEvent1()
 }
 
 
-//important: this has to be included in order to let the sensor initialize correctly.
-ISR(TIMER2_OVF_vect)
-{
-	if(airqualitysensor.counter==122)//set 2 seconds as a detected duty
-	{
-
-			airqualitysensor.last_vol=airqualitysensor.first_vol;
-			airqualitysensor.first_vol=analogRead(A0);
-			airqualitysensor.counter=0;
-			airqualitysensor.timer_index=1;
-			PORTB=PORTB^0x20;
-	}
-	else
-	{
-		airqualitysensor.counter++;
-	}
-}
