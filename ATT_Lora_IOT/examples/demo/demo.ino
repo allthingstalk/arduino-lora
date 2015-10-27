@@ -28,10 +28,7 @@ void setup()
   Serial1.begin(Modem.getDefaultBaudRate());         // init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
-  
-  pinMode(LED1, OUTPUT);                             // indicate that the device is running -> still battery power left
-  digitalWrite(LED1, HIGH);
-  
+
   sensorVal = digitalRead(DigitalSensor);
   SendValue(sensorVal);                              // send initial state
 }
