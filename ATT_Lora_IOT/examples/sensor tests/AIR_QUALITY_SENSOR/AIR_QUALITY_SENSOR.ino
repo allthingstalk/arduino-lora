@@ -1,9 +1,3 @@
-//You will need to install the following libraries:
-//Sodaq_BMP085
-//Sodaq_SHT2x
-//For information on installing libraries please refer to:
-//www.arduino.cc/en/Guide/Libraries
-
 #include <Wire.h>
 #include "AirQuality2.h"
 #include"Arduino.h"

@@ -1,8 +1,3 @@
-//You will need to install the following libraries:
-//Sodaq_BMP085
-//Sodaq_SHT2x
-//For information on installing libraries please refer to:
-//www.arduino.cc/en/Guide/Libraries
 
 #include <Wire.h>
 #include "ATT_Lora_IOT.h"
@@ -25,10 +20,6 @@ void setup()
   Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
-  
-  pinMode(LED1, OUTPUT);									//indicate that the device is running -> still battery power left
-  digitalWrite(LED1, HIGH);
- 
 }
 
 bool sensorVal = true;

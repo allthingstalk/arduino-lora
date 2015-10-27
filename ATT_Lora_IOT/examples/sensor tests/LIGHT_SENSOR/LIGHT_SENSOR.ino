@@ -18,7 +18,7 @@ ATTDevice Device(&Modem);
 
 void setup() 
 {
- 
+  pinMode(AnalogSensor,INPUT);
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
