@@ -1,3 +1,10 @@
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino demos
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
+
 #include <Wire.h>
 #include "AirQuality2.h"
 #include"Arduino.h"

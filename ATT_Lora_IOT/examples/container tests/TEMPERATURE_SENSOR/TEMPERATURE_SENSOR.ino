@@ -1,13 +1,11 @@
-//You will need to install the following libraries:
-//Sodaq_BMP085
-//Sodaq_SHT2x
-//For information on installing libraries please refer to:
-//www.arduino.cc/en/Guide/Libraries
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino demos
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
 
 #include <Wire.h>
-#include "MMA7660.h"
-#include <Sodaq_SHT2x.h>
-//#include <Sodaq_TPH.h>
 #include "ATT_Lora_IOT.h"
 #include "keys.h"
 #include "EmbitLoRaModem.h"
@@ -28,7 +26,6 @@ ATTDevice Device(&Modem);
 void setup() 
 {
   //tph.begin();
-  pinMode(ActionLed, OUTPUT);					           			// initialize the digital pin as an output -> show that modem is sending.          
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
@@ -51,10 +48,8 @@ void loop()
 
 void SendValue()
 {
-  digitalWrite(ActionLed, 1);
   Serial.println(value);
   Device.Send(value, TEMPERATURE_SENSOR);
-  digitalWrite(ActionLed, 0);
 }
 
 

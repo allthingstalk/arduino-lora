@@ -1,8 +1,10 @@
-//You will need to install the following libraries:
-//Sodaq_BMP085
-//Sodaq_SHT2x
-//For information on installing libraries please refer to:
-//www.arduino.cc/en/Guide/Libraries
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino experiments
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
+
 
 #include <Wire.h>
 #include <SoftwareSerial.h>

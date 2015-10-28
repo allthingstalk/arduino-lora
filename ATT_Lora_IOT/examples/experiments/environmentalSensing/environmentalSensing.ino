@@ -1,3 +1,10 @@
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino experiments
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
+
 #include <Wire.h>
 #include <Sodaq_TPH.h>
 #include "AirQuality2.h"
@@ -18,7 +25,7 @@ MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 AirQuality2 airqualitysensor;
 
-int prevAirQuality;
+short prevAirQuality;
 float prevTemp;
 float prevHum;
 int32_t prevPres;
@@ -111,25 +118,29 @@ void processTPH()
 
   if(temp != prevTemp)
   {
-    Device.Send(temp, TEMPERATURE_SENSOR);
-	prevTemp = temp;
+     Device.Send(temp, TEMPERATURE_SENSOR);
+	   prevTemp = temp;
   }
   if(hum != prevHum)
   {
-    Device.Send(hum, HUMIDITY_SENSOR);
-	prevHum = hum;
+     Device.Send(hum, HUMIDITY_SENSOR);
+	   prevHum = hum;
   }
   if(pres != prevPres)
   {
-    Device.Send((short)pres, PRESURE_SENSOR);
-	prevPres = pres;
+     Device.Send((short)pres, PRESURE_SENSOR);
+	   prevPres = pres;
   }
 }
 
 void processAirQuality()
 {
-    int value = airqualitysensor.getRawData();
-    Device.Send(value, AIR_QUALITY_SENSOR);
+    short value = airqualitysensor.getRawData();
+    if(value != prevAirQuality)
+    {
+        Device.Send(value, AIR_QUALITY_SENSOR);
+        prevAirQuality = value;
+    }
 }
 
 void serialEvent1()

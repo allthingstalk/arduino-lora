@@ -1,3 +1,10 @@
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino demos
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
+
 #include <Wire.h>
 #include "ATT_Lora_IOT.h"
 #include "keys.h"

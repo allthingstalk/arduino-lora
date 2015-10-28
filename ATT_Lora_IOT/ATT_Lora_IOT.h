@@ -28,6 +28,8 @@ Original author: Jan Bogaerts (2015)
 #define LOUDNESS_SENSOR ((short)12)
 #define AIR_QUALITY_SENSOR ((short)13)
 #define BATTERY_LEVEL ((short)14)
+#define INTEGER_SENSOR ((short)15)
+#define NUMBER_SENSOR ((short)16)
 
 //this class represents the ATT cloud platform.
 class ATTDevice

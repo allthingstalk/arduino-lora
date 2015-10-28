@@ -1,12 +1,11 @@
-//You will need to install the following libraries:
-//Sodaq_BMP085
-//Sodaq_SHT2x
-//For information on installing libraries please refer to:
-//www.arduino.cc/en/Guide/Libraries
+/*
+AllThingsTalk - SmartLiving.io LoRa Arduino demos
+Released into the public domain.
+
+Original author: Jan Bogaerts (2015)
+*/
 
 #include <Wire.h>
-#include "MMA7660.h"
-#include <Sodaq_SHT2x.h>
 #include "ATT_Lora_IOT.h"
 //#include "EmbitLoRaModem.h"
 #include "MicrochipLoRaModem.h"
