@@ -23,6 +23,7 @@ bool prevButtonState;
 bool prevDoorSensor;
 short visitCount = 0;                                       //keeps track of the nr of visitors         
 bool someoneInside = false;                                 //keeps track wether the door opened for letting someone in or out.
+bool isConnected = false;                                   //keeps track of the connection state.
 
 void setup() 
 {
@@ -32,52 +33,84 @@ void setup()
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());                    //init the baud rate of the serial connection so that it's ok for the modem
   
-  Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
-  Serial.println("Ready to send data");
-  
   prevButtonState = digitalRead(pushButton);                        //set the initial state
-  Device.Send(prevButtonState, PUSH_BUTTON);
   prevDoorSensor = digitalRead(doorSensor);                     //set the initial state
-  Device.Send(false, DOOR_SENSOR);                              //when the device is booted up, usually someone is inside to place/turn on the device, so the door is open = false
+  
+  tryConnect();
 }
+
+void tryConnect()
+{
+  isConnected = Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
+  if(isConnected == true)
+  {
+     Serial.println("Ready to send data");
+     Serial.print("init button: "); Serial.println(prevButtonState);
+     Device.Send(prevButtonState, PUSH_BUTTON);
+     Serial.println("init door sensor: false");
+     Device.Send(false, DOOR_SENSOR);                              //when the device is booted up, usually someone is inside to place/turn on the device, so the door is open = false
+     Serial.print("init visit count: "); Serial.println(visitCount);
+     Device.Send(visitCount, INTEGER_SENSOR);                       //we also send over the visit count so that the cloud is always in sync with the device (connection could have been established after the counter was changed since last connection).
+  } 
+  else
+     Serial.println("connection will by retried later");  
+}
+
 
 void loop() 
 {
-  bool sensorRead = digitalRead(pushButton);                    // check the state of the button
-  if (prevButtonState != sensorRead)                                // verify if value has changed
-  {
-     prevButtonState = sensorRead;
-     Device.Send(sensorRead, PUSH_BUTTON);
-     if(sensorRead == true)                                          //incrementing the counter is done on the cloud, cause it knows the previous count.
-     {
-        Serial.println("button pressed");
-        Device.Send((short)0, INTEGER_SENSOR);
-		    visitCount = 0;
-     }
-     else
-        Serial.println("button released");
-  }
-  sensorRead = digitalRead(doorSensor);                             // check the state of the door sensor
+  processButton();
+  processDoorSensor();
+  delay(100);
+  if(isConnected == false)                                              //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
+    tryConnect();
+}
+
+void processDoorSensor()
+{
+  bool sensorRead = digitalRead(doorSensor);                             // check the state of the door sensor
   if(prevDoorSensor != sensorRead)
   {
     prevDoorSensor = sensorRead;
-    Device.Send(sensorRead, DOOR_SENSOR);
     if(sensorRead == true)                                       //door was closed, so increment the counter 
     {
         Serial.println("door closed");
-        if(someoneInside == true)								//when a person enters, the door is opened & closed, when he leaves, the door is again opened & closed. We want to count the visits, not the nr of times that th door was opened & closed. This is of course an approximation.
+        if(someoneInside == true)                               //when a person enters, the door is opened & closed, when he leaves, the door is again opened & closed. We want to count the visits, not the nr of times that th door was opened & closed. This is of course an approximation.
         {
             someoneInside = false;
             visitCount++;                                           //the door was opened and closed again, so increment the counter
+            Serial.print("update visit count: "); Serial.println(visitCount);
             Device.Send(visitCount, INTEGER_SENSOR);
+            delay(1000);                                           //wait a little bit before sending another packet, otherwise we get punished by the base station.
         }
         else
             someoneInside = true;
     }
     else
         Serial.println("door open");
+    Serial.print("update door sensor: "); Serial.println(sensorRead);
+    Device.Send(sensorRead, DOOR_SENSOR);
   }
-  delay(100);
+}
+
+void processButton()
+{
+  bool sensorRead = digitalRead(pushButton);                    // check the state of the button
+  if (prevButtonState != sensorRead)                                // verify if value has changed
+  {
+     prevButtonState = sensorRead;
+     Serial.print("update button: "); Serial.println(sensorRead);
+     Device.Send(sensorRead, PUSH_BUTTON);
+     if(sensorRead == true)                                          //incrementing the counter is done on the cloud, cause it knows the previous count.
+     {
+        Serial.println("button pressed");
+        visitCount = 0;
+        Serial.print("update visit count: "); Serial.println(visitCount);
+        Device.Send(visitCount, INTEGER_SENSOR);
+     }
+     else
+        Serial.println("button released");
+  }
 }
 
 void SendValue(bool val)
