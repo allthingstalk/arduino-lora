@@ -34,8 +34,8 @@ class EmbitLoRaModem: public LoRaModem
 		//set the network session key
 		//network session key must be 16 bytes long
 		void SetNWKSKey(unsigned char*  nwksKey);
-		//start the modem 
-		void Start();
+		//start the modem , returns true if successful
+		bool Start();
 		//send a data packet to the server
 		bool Send(LoraPacket* packet, bool ack = true);
 		//process any incoming packets from the modem

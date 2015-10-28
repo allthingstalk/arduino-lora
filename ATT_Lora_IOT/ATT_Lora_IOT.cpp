@@ -19,8 +19,12 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	_modem->SetDevAddress(devAddress);
 	_modem->SetAppKey(appKey);
 	_modem->SetNWKSKey(nwksKey);
-	_modem->Start();								//start the modem up 
-	return true;									//we have created a connection succesfully.
+	bool result = _modem->Start();								//start the modem up 
+	if(result == true)
+		Serial.println("successfully connected");
+	else
+		Serial.println("failed to connect");
+	return result;									//we have created a connection succesfully.
 }
 
 //check for any new mqtt messages.
@@ -37,7 +41,11 @@ void ATTDevice::Send(String value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false) delay(1000);		//wait a little before retrying
+	while(_modem->Send(&_data, ack) == false)
+	{	
+		Serial.println("resending");
+		delay(2000);		//wait a little before retrying
+	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -45,7 +53,12 @@ void ATTDevice::Send(bool value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false)delay(1000);
+	while(_modem->Send(&_data, ack) == false)
+	{
+		Serial.println("resending");
+		delay(2000);
+	}
+		
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -53,7 +66,11 @@ void ATTDevice::Send(short value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false) delay(1000);
+	while(_modem->Send(&_data, ack) == false)
+	{	
+		delay(2000);
+		Serial.println("resending");
+	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -61,7 +78,11 @@ void ATTDevice::Send(float value, short id, bool ack)
 {
 	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false) delay(1000);
+	while(_modem->Send(&_data, ack) == false) 
+	{
+		delay(2000);
+		Serial.println("resending");
+	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 
@@ -69,7 +90,11 @@ void ATTDevice::Send(float value, short id, bool ack)
 void ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
-	while(_modem->Send(&_data, ack) == false) delay(1000);
+	while(_modem->Send(&_data, ack) == false) 
+	{
+		delay(2000);
+		Serial.println("resending");
+	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 }
 

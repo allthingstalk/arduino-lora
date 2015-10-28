@@ -70,11 +70,14 @@ void EmbitLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 	ReadPacket();
 }
 
-void EmbitLoRaModem::Start()
+bool EmbitLoRaModem::Start()
 {
 	Serial.println("Sending the netowrk start command");
 	SendPacket(CMD_START, sizeof(CMD_START));
 	ReadPacket();
+	
+	//toddo: check result of readPacket and return actual success or not.
+	return true;
 }
 
 bool EmbitLoRaModem::Send(LoraPacket* packet, bool ack)

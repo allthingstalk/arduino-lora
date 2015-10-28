@@ -29,8 +29,8 @@ class LoRaModem
 		//set the network session key
 		//network session key must be 16 bytes long
 		virtual void SetNWKSKey(unsigned char*  nwksKey) = 0;
-		//start the modem 
-		virtual void Start() = 0;
+		//start the modem: returns true if successful
+		virtual bool Start() = 0;
 		//send a data packet to the server
 		//ack = true -> request ack
 		virtual bool Send(LoraPacket* packet, bool ack = true) = 0;
