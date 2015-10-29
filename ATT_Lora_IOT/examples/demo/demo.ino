@@ -7,15 +7,15 @@ Original author: Jan Bogaerts (2015)
 
 #include <Wire.h>
 #include "ATT_Lora_IOT.h"
-//#include "EmbitLoRaModem.h"
-#include "MicrochipLoRaModem.h"
+#include "EmbitLoRaMode.h"
+//#include "MicrochipLoRaModem.h"
 #include "keys.h"
 
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                              // pin this sensor is connected to
-//EmbitLoRaModem Modem(&Serial1);
-MicrochipLoRaModem Modem(&Serial1);
+EmbitLoRaModem Modem(&Serial1);
+//MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 bool sensorVal = false;
