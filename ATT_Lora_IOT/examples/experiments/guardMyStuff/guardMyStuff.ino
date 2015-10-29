@@ -15,15 +15,15 @@ Original author: Jan Bogaerts (2015)
 #include "MicrochipLoRaModem.h"
 
 #define SERIAL_BAUD 57600
-#define MOVEMENTTRESHOLD 10         //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
+#define MOVEMENTTRESHOLD 10                         //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
 
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 ADXL345 accelemeter;
-SoftwareSerial SoftSerial(20, 21);          //reading GPS values from serial connection with GPS
-unsigned char buffer[64];                   // buffer array for data receive over serial port
+SoftwareSerial SoftSerial(20, 21);                  //reading GPS values from serial connection with GPS
+unsigned char buffer[64];                           // buffer array for data receive over serial port
 int count=0;  
 
 //variables for the coordinates (GPS)
@@ -32,12 +32,12 @@ float latitude;
 float altitude;
 float timestamp;
 
-int prevX,prevY,prevZ;                          //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
-unsigned long prevCoordinatesAt;                //only send the coordinates every 15 seconds, so we need to keep track of the time.
+int prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
+unsigned long prevCoordinatesAt;                    //only send the coordinates every 15 seconds, so we need to keep track of the time.
 
-//accelerometer data is translated to 'moving vs not moving' on the device.
+//accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
-bool wasMoving = false;                         //at startup, we presume that the device is not moving, so we can pick 
+bool wasMoving = false;                                         
 
 void setup() 
 {
@@ -67,11 +67,11 @@ void loop()
           wasMoving = true;
           Device.Send(true, PUSH_BUTTON);
       }
-      if(prevCoordinatesAt < millis() - 15000)          //only send every 15 seconds, so we don't swamp the system.
+      if(prevCoordinatesAt < millis() - 15000)              //only send every 15 seconds, so we don't swamp the system.
       {
-		 Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
-         while(readCoordinates() == false) delay(300);  //try to read some coordinates until we have a valid set. Everyt time we fail, pause a little to give the GPS some time.
-         SendCoordinates();                            //send the coordinates over.
+         Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
+         while(readCoordinates() == false) delay(300);      //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time.
+         SendCoordinates();                                 //send the coordinates over.
          prevCoordinatesAt = millis(); 
       }
   }
@@ -120,18 +120,17 @@ void SendCoordinates()
 //returns: true when gps coordinates were found in the input, otherwise false.
 bool readCoordinates()
 {
-    bool foundGPGGA = false;                    //sensor can return multiple types of data, need to capture lines that start with $GPGGA
-    if (SoftSerial.available())                     // if date is coming from software serial port ==> data is coming from SoftSerial shield
+    bool foundGPGGA = false;                        //sensor can return multiple types of data, need to capture lines that start with $GPGGA
+    if (SoftSerial.available())                     
     {
         while(SoftSerial.available())               // reading data into char array
         {
-            buffer[count++]=SoftSerial.read();      // writing data into array
+            buffer[count++]=SoftSerial.read();      // store the received data in a temp buffer for further processing later on
             if(count == 64)break;
         }
         //Serial.println(count);
         foundGPGGA = count > 60 && ExtractValues();  //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
-        clearBufferArray();                         // call clearBufferArray function to clear the stored data from the array
-        count = 0;                                  // set counter of while loop to zero
+        clearBufferArray();                          // call clearBufferArray function to clear the stored data from the array
     }
     return foundGPGGA;
 }
@@ -188,10 +187,10 @@ unsigned char Skip(unsigned char start)
     return end+1;
 }
 
-void clearBufferArray()                     // function to clear buffer array
+void clearBufferArray()                             // function to clear buffer array
 {
-    for (int i=0; i<count;i++)
-    { buffer[i]=NULL;}                      // clear all index of array with command NULL
+    for (int i=0; i<count;i++) buffer[i]=NULL;      // reset the entire buffer back to 0
+    count = 0;
 }
 
 void serialEvent1()

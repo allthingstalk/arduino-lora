@@ -13,7 +13,7 @@ Original author: Jan Bogaerts (2015)
 
 #define SERIAL_BAUD 57600
 
-int pushButton = 20;                                        // Digital Sensor is connected to pin D8 on grove shield 
+int pushButton = 20;          
 int doorSensor = 4;
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
@@ -31,10 +31,10 @@ void setup()
   pinMode(doorSensor, INPUT);
   
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());                    //init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());                //init the baud rate of the serial connection so that it's ok for the modem
   
-  prevButtonState = digitalRead(pushButton);                        //set the initial state
-  prevDoorSensor = digitalRead(doorSensor);                     //set the initial state
+  prevButtonState = digitalRead(pushButton);                //set the initial state
+  prevDoorSensor = digitalRead(doorSensor);                 //set the initial state
   
   tryConnect();
 }
@@ -62,20 +62,21 @@ void loop()
   processButton();
   processDoorSensor();
   delay(100);
-  if(isConnected == false)                                              //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
+  if(isConnected == false)                                          //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
     tryConnect();
 }
 
+// check the state of the door sensor
 void processDoorSensor()
 {
-  bool sensorRead = digitalRead(doorSensor);                             // check the state of the door sensor
+  bool sensorRead = digitalRead(doorSensor);                         
   if(prevDoorSensor != sensorRead)
   {
     prevDoorSensor = sensorRead;
-    if(sensorRead == true)                                       //door was closed, so increment the counter 
+    if(sensorRead == true)                                          //door was closed, so increment the counter 
     {
         Serial.println("door closed");
-        if(someoneInside == true)                               //when a person enters, the door is opened & closed, when he leaves, the door is again opened & closed. We want to count the visits, not the nr of times that th door was opened & closed. This is of course an approximation.
+        if(someoneInside == true)                                   //when a person enters, the door is opened & closed, when he leaves, the door is again opened & closed. We want to count the visits, not the nr of times that th door was opened & closed. This is of course an approximation.
         {
             someoneInside = false;
             visitCount++;                                           //the door was opened and closed again, so increment the counter
@@ -95,13 +96,13 @@ void processDoorSensor()
 
 void processButton()
 {
-  bool sensorRead = digitalRead(pushButton);                    // check the state of the button
+  bool sensorRead = digitalRead(pushButton);                        // check the state of the button
   if (prevButtonState != sensorRead)                                // verify if value has changed
   {
      prevButtonState = sensorRead;
      Serial.print("update button: "); Serial.println(sensorRead);
      Device.Send(sensorRead, PUSH_BUTTON);
-     if(sensorRead == true)                                          //incrementing the counter is done on the cloud, cause it knows the previous count.
+     if(sensorRead == true)                                         
      {
         Serial.println("button pressed");
         visitCount = 0;

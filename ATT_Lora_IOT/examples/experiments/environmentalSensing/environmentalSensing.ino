@@ -34,7 +34,7 @@ float prevSoundLevel;
 
 void setup() 
 {
-  pinMode(GROVEPWR, OUTPUT);                            //turn the power on on the secondary row of grove connectors.
+  pinMode(GROVEPWR, OUTPUT);                                    //turn the power on on the secondary row of grove connectors.
   digitalWrite(GROVEPWR, HIGH);
 
   Serial.begin(SERIAL_BAUD);
