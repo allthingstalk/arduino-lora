@@ -19,18 +19,15 @@ Original author: Jan Bogaerts (2015)
 #define LightSensorPin A4
 #define SoundSensorPin A2
 
+#define SEND_EVERY 1800000
+
 
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 AirQuality2 airqualitysensor;
 
-short prevAirQuality;
-float prevTemp;
-float prevHum;
-int32_t prevPres;
-float prevLightValue;
-float prevSoundLevel;
+unsigned long lastValueSendAt;									//the time when the last value was send	
 
 void setup() 
 {
@@ -44,29 +41,31 @@ void setup()
     Serial.println("retrying...");
     delay(200);
   }
+  Device.SetMaxSendRetry(-1);								//for this use case we want to send the measurement or block until we have, cause that's the primary function of this device: capture and transmit the value.
   
   initTPH();
   initAirQuality();
   initLightSensor();
   initSoundSensor();
+  lastValueSendAt = millis();
 }
 
 void loop() 
 {
+  Serial.print("delay for: ");
+  Serial.println(lastValueSendAt - millis() + SEND_EVERY);
+  delay(lastValueSendAt - millis() + SEND_EVERY);
   processTPH();
   processAirQuality();
   processLightSensor();
   processSoundSensor();
-  delay(10000);
+  lastValueSendAt = millis();
 }
 
 void initSoundSensor()
 {
   pinMode(SoundSensorPin,INPUT);
-  prevSoundLevel = analogRead(SoundSensorPin);
-  Serial.print("sound level: ");
-  Serial.println(prevSoundLevel);
-  Device.Send(prevSoundLevel, LOUDNESS_SENSOR);
+  processSoundSensor();
 }
 
 void processSoundSensor()
@@ -74,54 +73,28 @@ void processSoundSensor()
   float sensorValue = analogRead(SoundSensorPin);
   Serial.print("sound level: ");
   Serial.println(sensorValue);
-  if(sensorValue != prevSoundLevel)
-  {
-    Device.Send(sensorValue, LOUDNESS_SENSOR);
-    prevSoundLevel = sensorValue;
-  }
+  Device.Send(sensorValue, LOUDNESS_SENSOR);
 }
 
 void initLightSensor()
 {
   pinMode(LightSensorPin,INPUT);
+  processLightSensor();
+}
+
+void processLightSensor()
+{
   float sensorValue = analogRead(LightSensorPin);
-  float prevLightValue = (float)(1023 - sensorValue) * 10 / sensorValue;
+  sensorValue = (float)(1023 - sensorValue) * 10 / sensorValue;
   Serial.print("light intensity: ");
-  Serial.println(prevLightValue);
-  Device.Send(prevLightValue, LIGHT_SENSOR);
+  Serial.println(sensorValue);
+  Device.Send(sensorValue, LIGHT_SENSOR);
 }
 
 void initTPH()
 {
   tph.begin();
-  
-  float prevTemp = tph.readTemperature();
-  float prevHum = tph.readHumidity();
-  int32_t prevPres = tph.readPressure();
-  
-  Serial.print("temp: ");
-  Serial.print(prevTemp);
-  
-  Serial.print(", humidity: ");
-  Serial.print(prevHum);
-  
-  Serial.print(", pressure: ");
-  Serial.print(prevPres);
-  Serial.println();
-
-  Device.Send(prevTemp, TEMPERATURE_SENSOR);
-  Device.Send(prevHum, HUMIDITY_SENSOR);
-  Device.Send((short)prevPres, PRESURE_SENSOR);
-}
-
-void initAirQuality()
-{
-  airqualitysensor.init(AirQualityPin);
-  
-  prevAirQuality = airqualitysensor.getRawData();               //get the initial values so that we only send out values upon startup and when values have changed.
-  Serial.print("air quality: ");
-  Serial.println(prevAirQuality);
-  Device.Send(prevAirQuality, AIR_QUALITY_SENSOR);
+  processTPH();
 }
 
 void processTPH()
@@ -140,47 +113,26 @@ void processTPH()
   Serial.print(pres);
   Serial.println();
 
-  if(temp != prevTemp)
-  {
-     Device.Send(temp, TEMPERATURE_SENSOR);
-       prevTemp = temp;
-  }
-  if(hum != prevHum)
-  {
-     Device.Send(hum, HUMIDITY_SENSOR);
-       prevHum = hum;
-  }
-  if(pres != prevPres)
-  {
-     Device.Send((short)pres, PRESURE_SENSOR);
-       prevPres = pres;
-  }
+  Device.Send(temp, TEMPERATURE_SENSOR);
+  Device.Send(hum, HUMIDITY_SENSOR);
+  Device.Send((short)pres, PRESURE_SENSOR);
 }
+
+void initAirQuality()
+{
+  airqualitysensor.init(AirQualityPin);
+  processAirQuality();
+}
+
 
 void processAirQuality()
 {
     short value = airqualitysensor.getRawData();
     Serial.print("air quality: ");
     Serial.println(value);
-    if(value != prevAirQuality)
-    {
-        Device.Send(value, AIR_QUALITY_SENSOR);
-        prevAirQuality = value;
-    }
+    Device.Send(value, AIR_QUALITY_SENSOR);
 }
 
-void processLightSensor()
-{
-  float sensorValue = analogRead(LightSensorPin);
-  sensorValue = (float)(1023 - sensorValue) * 10 / sensorValue;
-  Serial.print("light intensity: ");
-  Serial.println(sensorValue);
-  if(sensorValue != prevLightValue)
-  {
-    Device.Send(sensorValue, LIGHT_SENSOR);
-    prevLightValue = sensorValue;
-  }
-}
 
 void serialEvent1()
 {

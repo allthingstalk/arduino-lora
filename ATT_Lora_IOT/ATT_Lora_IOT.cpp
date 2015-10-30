@@ -3,10 +3,11 @@
 */
 
 #include "ATT_Lora_IOT.h"
+//#include <arduino.h>
 
 
 //create the object
-ATTDevice::ATTDevice(LoRaModem* modem)
+ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY)
 {
 	_modem = modem;
 }
@@ -27,10 +28,7 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	return result;									//we have created a connection succesfully.
 }
 
-//check for any new mqtt messages.
-//deAddress = 4 byte array
-//appKey = 16 byte array
-//nwksKey = 16 byte array
+//check for any incoming data
 void ATTDevice::Process()
 {
 }
@@ -39,63 +37,48 @@ void ATTDevice::Process()
 //send a data value to the cloud server for the sensor with the specified id.
 void ATTDevice::Send(String value, short id, bool ack)
 {
-	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false)
-	{	
-		Serial.println("resending");
-		delay(2000);		//wait a little before retrying
-	}
-	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	Send(id, ack);
 }
 
 void ATTDevice::Send(bool value, short id, bool ack)
 {
-	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false)
-	{
-		Serial.println("resending");
-		delay(2000);
-	}
-		
-	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	Send(id, ack);
 }
 
 void ATTDevice::Send(short value, short id, bool ack)
 {
-	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false)
-	{	
-		delay(2000);
-		Serial.println("resending");
-	}
-	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	Send(id, ack);
 }
 
 void ATTDevice::Send(float value, short id, bool ack)
 {
-	_data.SetId(id);
 	_data.Add(value);
-	while(_modem->Send(&_data, ack) == false) 
-	{
-		delay(2000);
-		Serial.println("resending");
-	}
-	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	Send(id, ack);
 }
 
 //sends the previously built complex data packet to the cloud for the sensor with the specified
 void ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
-	while(_modem->Send(&_data, ack) == false) 
+	short nrRetries = 0;
+	unsigned long curTime = millis();
+	if(_lastTimeSent > curTime - MIN_TIME_BETWEEN_SEND)
 	{
+		Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(prevTime); Serial.print(", dif = ");
+		Serial.println(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
+		delay(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
+	}
+	while(_modem->Send(&_data, ack) == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
+	{
+		nrRetries++;
 		delay(2000);
 		Serial.println("resending");
 	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	_lastTimeSent = millis();
 }
 
 //loads a bool data value into the data packet that is being prepared to send to the

@@ -19,10 +19,13 @@ int doorSensor = 4;
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
+#define SEND_MAX_EVERY 30000								//the mimimum time between 2 consecutive updates of visit counts that are sent to the cloud (can be longer, if the value hasn't changed)
+
 bool prevButtonState;
 bool prevDoorSensor;
 short visitCount = 0;                                       //keeps track of the nr of visitors         
-bool someoneInside = false;                                 //keeps track wether the door opened for letting someone in or out.
+short prevVisitCountSent = 0;								//we only send visit count max every 30 seconds, but only if the value has changed, so keep track of the value that was last sent to the cloud.
+unsigned long lastSentAt = 0;								//the time when the last visitcount was sent to the cloud.
 bool isConnected = false;                                   //keeps track of the connection state.
 
 void setup() 
@@ -36,7 +39,7 @@ void setup()
   prevButtonState = digitalRead(pushButton);                //set the initial state
   prevDoorSensor = digitalRead(doorSensor);                 //set the initial state
   
-  tryConnect();
+  Device.SetMaxSendRetry(5);								//for this use case we don't want to get stuck too long in sending data, we primarely want to capture visits and count them, sending the count can be done later on.
 }
 
 void tryConnect()
@@ -45,12 +48,8 @@ void tryConnect()
   if(isConnected == true)
   {
      Serial.println("Ready to send data");
-     Serial.print("init button: "); Serial.println(prevButtonState);
-     Device.Send(prevButtonState, PUSH_BUTTON);
-     Serial.println("init door sensor: false");
-     Device.Send(false, DOOR_SENSOR);                              //when the device is booted up, usually someone is inside to place/turn on the device, so the door is open = false
-     Serial.print("init visit count: "); Serial.println(visitCount);
-     Device.Send(visitCount, INTEGER_SENSOR);                       //we also send over the visit count so that the cloud is always in sync with the device (connection could have been established after the counter was changed since last connection).
+	 //todo: improvement: retrieved the count stored on disk so that it is not lost after power down
+	 sendVisitCount();									//always send the value at initial connection, keep the platform in sync with the latest change on the device.
   } 
   else
      Serial.println("connection will by retried later");  
@@ -59,11 +58,21 @@ void tryConnect()
 
 void loop() 
 {
+  if(isConnected == false)                                          //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
+    tryConnect();
   processButton();
   processDoorSensor();
   delay(100);
-  if(isConnected == false)                                          //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
-    tryConnect();
+  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())
+	sendVisitCount();
+}
+
+void sendVisitCount()
+{
+  Serial.print("send visit count: "); Serial.println(visitCount);
+  Device.Send(visitCount, INTEGER_SENSOR);                       //we also send over the visit count so that the cloud is always in sync with the device (connection could have been established after the counter was changed since last connection).
+  prevVisitCountSent = visitCount;
+  lastSentAt = millis();
 }
 
 // check the state of the door sensor
@@ -76,21 +85,10 @@ void processDoorSensor()
     if(sensorRead == true)                                          //door was closed, so increment the counter 
     {
         Serial.println("door closed");
-        if(someoneInside == true)                                   //when a person enters, the door is opened & closed, when he leaves, the door is again opened & closed. We want to count the visits, not the nr of times that th door was opened & closed. This is of course an approximation.
-        {
-            someoneInside = false;
-            visitCount++;                                           //the door was opened and closed again, so increment the counter
-            Serial.print("update visit count: "); Serial.println(visitCount);
-            Device.Send(visitCount, INTEGER_SENSOR);
-            delay(1000);                                           //wait a little bit before sending another packet, otherwise we get punished by the base station.
-        }
-        else
-            someoneInside = true;
+        visitCount++;                                           //the door was opened and closed again, so increment the counter
     }
     else
         Serial.println("door open");
-    Serial.print("update door sensor: "); Serial.println(sensorRead);
-    Device.Send(sensorRead, DOOR_SENSOR);
   }
 }
 
@@ -100,14 +98,10 @@ void processButton()
   if (prevButtonState != sensorRead)                                // verify if value has changed
   {
      prevButtonState = sensorRead;
-     Serial.print("update button: "); Serial.println(sensorRead);
-     Device.Send(sensorRead, PUSH_BUTTON);
      if(sensorRead == true)                                         
      {
         Serial.println("button pressed");
         visitCount = 0;
-        Serial.print("update visit count: "); Serial.println(visitCount);
-        Device.Send(visitCount, INTEGER_SENSOR);
      }
      else
         Serial.println("button released");

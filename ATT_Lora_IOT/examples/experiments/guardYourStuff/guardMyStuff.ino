@@ -16,6 +16,8 @@ Original author: Jan Bogaerts (2015)
 
 #define SERIAL_BAUD 57600
 #define MOVEMENTTRESHOLD 10                         //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
+#define NO_MOVE_DELAY 600000						//amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light.
+#define GPS_DATA_EVERY 900000						//the amount of time between 2 consecutive GPS updates while moving.
 
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
@@ -38,6 +40,8 @@ unsigned long prevCoordinatesAt;                    //only send the coordinates 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
 bool wasMoving = false;                                         
+bool wasMovingDelay = false;									//we delay the switch to 'wasMoving = false' for 10 minutes, in order to compensate for short stops (ex: stopping at a traffic light). This cuts down on the number of messages that we send (expensive)
+unsigned long movemementStoppedAt;								//the moment that movement stopped, so we can add a delay of 10 minutes (amount of time that there can't be any movement) before actually changing the state to 'none-moving'.
 
 void setup() 
 {
@@ -51,8 +55,6 @@ void setup()
     Serial.println("retrying...");
     delay(200);
   }
-  Device.Send(false, PUSH_BUTTON);                              //we have started up, make certain that the cloud is initialized with the state of the device (in case the device was turned off last time while it was moving).
-  
   accelemeter.readXYZ(&prevX, &prevY, &prevZ);                  //get the current state of the accelerometer, so we can use this info in the loop as something to compare against.
 }
 
@@ -60,6 +62,7 @@ void loop()
 {
   if(isMoving() == true)
   {
+	  wasMovingDelay = false;							//reset this flag every time that movement is detected, so that we are prepared to capture a delay to move 'wasMoving' back to false.
       if(wasMoving == false)
       {
           Serial.println("movement detected");
@@ -67,23 +70,28 @@ void loop()
           wasMoving = true;
           Device.Send(true, PUSH_BUTTON);
       }
-      if(prevCoordinatesAt < millis() - 15000)              //only send every 15 seconds, so we don't swamp the system.
+      if(prevCoordinatesAt < millis() - GPS_DATA_EVERY)              //only send every 15 seconds, so we don't swamp the system.
       {
-         Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
-         while(readCoordinates() == false) delay(300);      //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time.
          SendCoordinates();                                 //send the coordinates over.
          prevCoordinatesAt = millis(); 
       }
   }
   else if(wasMoving == true)
   {
-     Serial.println("movement stopped");
-     //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
-     //optional improvement: turn off the gps module
-     wasMoving = false;
-     Device.Send(false, PUSH_BUTTON);
+     if(wasMovingDelay == false)
+	 {
+        movemementStoppedAt = millis();
+		wasMovingDelay = true;
+	 }
+	 else if(movemementStoppedAt + NO_MOVE_DELAY <= millis())	//only change the state when the delay period has passed.
+	 {
+        Serial.println("movement stopped");
+        //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
+        //optional improvement: turn off the gps module
+        wasMoving = false;
+		SendCoordinates();                                 //when we have stopped moving, best to report the final destination point.
   }
-  delay(1000);
+  delay(100);												//sample the accelerometer quickly -> not so costly.
 }
 
 bool isMoving()
@@ -101,6 +109,9 @@ bool isMoving()
 //sends the GPS coordinates to the cloude
 void SendCoordinates()
 {
+  Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
+  while(readCoordinates() == false) delay(300);      //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
+		 
   Device.Queue(longitude);
   Device.Queue(latitude);
   Device.Queue(altitude);
@@ -128,7 +139,6 @@ bool readCoordinates()
             buffer[count++]=SoftSerial.read();      // store the received data in a temp buffer for further processing later on
             if(count == 64)break;
         }
-        //Serial.println(count);
         foundGPGGA = count > 60 && ExtractValues();  //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
         clearBufferArray();                          // call clearBufferArray function to clear the stored data from the array
     }
