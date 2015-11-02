@@ -10,6 +10,7 @@
 ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY)
 {
 	_modem = modem;
+	_lastTimeSent = 0;
 }
 
 //connect with the to the lora gateway
@@ -65,8 +66,9 @@ void ATTDevice::Send(short id, bool ack)
 	_data.SetId(id);
 	short nrRetries = 0;
 	unsigned long curTime = millis();
-	if(_lastTimeSent > curTime - MIN_TIME_BETWEEN_SEND)
+	if(_lastTimeSent != 0 && _lastTimeSent + MIN_TIME_BETWEEN_SEND > curTime)
 	{
+		Serial.println("pausing between 2 consecutive messages...");
 		Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
 		Serial.println(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
 		delay(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);

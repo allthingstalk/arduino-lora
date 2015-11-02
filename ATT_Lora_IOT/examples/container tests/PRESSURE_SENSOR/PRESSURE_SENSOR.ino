@@ -43,7 +43,7 @@ void loop()
 void SendValue()
 {
   Serial.println(value);
-  Device.Send(value, PRESURE_SENSOR);
+  Device.Send(value, PRESSURE_SENSOR);
 }
 
 

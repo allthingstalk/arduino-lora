@@ -53,13 +53,13 @@ void setup()
 void loop() 
 {
   Serial.print("delay for: ");
-  Serial.println(lastValueSendAt - millis() + SEND_EVERY);
+  Serial.println(SEND_EVERY - millis() - lastValueSendAt);
   delay(lastValueSendAt - millis() + SEND_EVERY);
+  lastValueSendAt = millis();       //we start the timer before we send everything, so we send every 180.000, not every 180.000 + time it took to send prev batch.
   processTPH();
   processAirQuality();
   processLightSensor();
   processSoundSensor();
-  lastValueSendAt = millis();
 }
 
 void initSoundSensor()
@@ -115,7 +115,7 @@ void processTPH()
 
   Device.Send(temp, TEMPERATURE_SENSOR);
   Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send((short)pres, PRESURE_SENSOR);
+  Device.Send((short)pres, PRESSURE_SENSOR);
 }
 
 void initAirQuality()

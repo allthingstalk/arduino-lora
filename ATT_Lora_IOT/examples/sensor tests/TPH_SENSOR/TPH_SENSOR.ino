@@ -59,7 +59,7 @@ void loop()
 
   Device.Send(temp, TEMPERATURE_SENSOR);
   Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send((short)pres, PRESURE_SENSOR);
+  Device.Send((short)pres, PRESSURE_SENSOR);
   
   delay(3000);
 }
