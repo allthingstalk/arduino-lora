@@ -67,7 +67,7 @@ void ATTDevice::Send(short id, bool ack)
 	unsigned long curTime = millis();
 	if(_lastTimeSent > curTime - MIN_TIME_BETWEEN_SEND)
 	{
-		Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(prevTime); Serial.print(", dif = ");
+		Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
 		Serial.println(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
 		delay(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
 	}
