@@ -45,7 +45,7 @@ void loop()
 
 void SendValue(bool val)
 {
-  Serial.println(sensorVal);
+  Serial.println(val);
   Device.Send(val, BINARY_SENSOR);
 }
 
