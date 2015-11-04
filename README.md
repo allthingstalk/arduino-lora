@@ -16,7 +16,12 @@ This library has been developed for the folowing hardware:
   
 ### Example sketches
 
-The library includes an example sketch for each sensor that is currently supported on the proximus-LoRa network. Each example shows you how to work with the sensor.
+The library includes an example sketch for each sensor that is currently supported on the proximus-LoRa network. Each example shows you how to work with the sensor.   
+Some sensors require a 3th party library. For ease of use, we have included a working version of these libraries in the [download](https://github.com/allthingstalk/arduino-lora/archive/master.zip). The following library versions were used:
+
+* [AirQuality2](https://github.com/MikeHg/AirQualitySensor/tree/d6cadaf21c6beae99fdd65bb037424ce6f855db1)
+* [ADX345 (Accelerometer)](https://github.com/Seeed-Studio/Accelerometer_ADXL345/tree/b0a0ed0799afec4476e00d0a056d5ee223ed9e72)
+* [TPH](https://github.com/SodaqMoja/Sodaq_TPH/tree/e83e52e1a0dfb16b91e035149d6bdd047cfbe444) Sodaq_SHT2x library
 
 ### Experiments
 
