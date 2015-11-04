@@ -25,7 +25,7 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	if(result == true)
 		Serial.println("successfully connected");
 	else
-		Serial.println("failed to connect");
+		Serial.println("failed to connect to LoRa");
 	return result;									//we have created a connection succesfully.
 }
 
