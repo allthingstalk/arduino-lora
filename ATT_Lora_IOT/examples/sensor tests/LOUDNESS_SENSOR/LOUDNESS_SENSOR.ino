@@ -6,9 +6,8 @@ Original author: Jan Bogaerts (2015)
 */
 
 #include <Wire.h>
-#include "ATT_Lora_IOT.h"
+#include "ATT_LoRa_IOT.h"
 #include "keys.h"
-//#include "EmbitLoRaModem.h"
 #include "MicrochipLoRaModem.h"
 
 #define SERIAL_BAUD 57600
@@ -16,7 +15,7 @@ Original author: Jan Bogaerts (2015)
 
 #define AnalogSensor A4
 
-//EmbitLoRaModem Modem(&Serial1);
+
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 

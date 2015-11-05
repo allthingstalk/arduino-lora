@@ -9,9 +9,8 @@ Original author: Jan Bogaerts (2015)
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <ADXL345.h>
-#include "ATT_Lora_IOT.h"
+#include "ATT_LoRa_IOT.h"
 #include "keys.h"
-//#include "EmbitLoRaModem.h"
 #include "MicrochipLoRaModem.h"
 
 #define SERIAL_BAUD 57600
@@ -19,7 +18,6 @@ Original author: Jan Bogaerts (2015)
 #define NO_MOVE_DELAY 60000                        //amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
 #define GPS_DATA_EVERY 90000                       //the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
 
-//EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 

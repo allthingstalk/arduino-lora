@@ -8,9 +8,8 @@ Original author: Jan Bogaerts (2015)
 #include <Wire.h>
 #include <Sodaq_TPH.h>
 #include "AirQuality2.h"
-#include "ATT_Lora_IOT.h"
+#include "ATT_LoRa_IOT.h"
 #include "keys.h"
-//#include "EmbitLoRaModem.h"
 #include "MicrochipLoRaModem.h"
 
 
@@ -22,7 +21,6 @@ Original author: Jan Bogaerts (2015)
 #define SEND_EVERY 1800000
 
 
-//EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 AirQuality2 airqualitysensor;
