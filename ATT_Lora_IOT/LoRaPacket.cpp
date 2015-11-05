@@ -3,14 +3,14 @@
 */
 
 
-#include "LoraPacket.h"
+#include "LoRaPacket.h"
 
 //create the object
-LoraPacket::LoraPacket()
+LoRaPacket::LoRaPacket()
 {
 }
 
-unsigned char LoraPacket::Write(unsigned char* result)
+unsigned char LoRaPacket::Write(unsigned char* result)
 {
 	unsigned char curPos = 0;
 	
@@ -60,12 +60,12 @@ unsigned char LoraPacket::Write(unsigned char* result)
 }
 
 //assigns the asset/container id to the packet
-void LoraPacket::SetId(unsigned char id)
+void LoRaPacket::SetId(unsigned char id)
 {
 	contId = id;
 }
 
-unsigned char LoraPacket::calculateCheckSum(unsigned char* toSend, short len)
+unsigned char LoRaPacket::calculateCheckSum(unsigned char* toSend, short len)
 {
 	int sum = 0;
 	for(int i = 0; i < len; i++)
@@ -85,7 +85,7 @@ unsigned char LoraPacket::calculateCheckSum(unsigned char* toSend, short len)
 }
 
 
-bool LoraPacket::Add(bool value)
+bool LoRaPacket::Add(bool value)
 {
 	if(nrBools >= 8)
 		return false;
@@ -98,7 +98,7 @@ bool LoraPacket::Add(bool value)
 	return true;
 }
 
-bool LoraPacket::Add(short value)
+bool LoRaPacket::Add(short value)
 {
 	if(nrInts >= 16)
 		return false;
@@ -107,7 +107,7 @@ bool LoraPacket::Add(short value)
 	return true;
 }
 
-bool LoraPacket::Add(String value)
+bool LoRaPacket::Add(String value)
 {
 	int len = value.length();
 	if(stringPos + len >= 48)
@@ -118,7 +118,7 @@ bool LoraPacket::Add(String value)
 	return true;
 }
 
-bool LoraPacket::Add(float value)
+bool LoRaPacket::Add(float value)
 {
 	if(nrFloats >= 16)
 		return false;
@@ -127,7 +127,7 @@ bool LoraPacket::Add(float value)
 	return true;
 }
 
-void LoraPacket::Reset()
+void LoRaPacket::Reset()
 {
 	stringPos = 0;
 	nrFloats = 0;
