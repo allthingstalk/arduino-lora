@@ -5,19 +5,19 @@ Released into the public domain.
 Original author: Jan Bogaerts (2015)
 */
 
-#ifndef LoraPacket_h
-#define LoraPacket_h
+#ifndef LoRaPacket_h
+#define LoRaPacket_h
 
 #include "Arduino.h"
 #include <string.h>
 #include <Stream.h>
 
 //this class represents the ATT cloud platform.
-class LoraPacket
+class LoRaPacket
 {
 	public:
 		//create the object
-		LoraPacket();
+		LoRaPacket();
 		
 		//writes the packet content to the specified byte array. This must be at least 51 bytes long.
 		//returns: the nr of bytes actually written to the array.
