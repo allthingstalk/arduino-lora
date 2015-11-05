@@ -37,7 +37,7 @@ class EmbitLoRaModem: public LoRaModem
 		//start the modem , returns true if successful
 		bool Start();
 		//send a data packet to the server
-		bool Send(LoraPacket* packet, bool ack = true);
+		bool Send(LoRaPacket* packet, bool ack = true);
 		//process any incoming packets from the modem
 		 void ProcessIncoming();
 	private:

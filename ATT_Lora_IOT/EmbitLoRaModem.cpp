@@ -80,7 +80,7 @@ bool EmbitLoRaModem::Start()
 	return true;
 }
 
-bool EmbitLoRaModem::Send(LoraPacket* packet, bool ack)
+bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(sendBuffer);
 	Serial.println("Sending payload: ");

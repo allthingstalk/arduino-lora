@@ -33,7 +33,7 @@ class LoRaModem
 		virtual bool Start() = 0;
 		//send a data packet to the server
 		//ack = true -> request ack
-		virtual bool Send(LoraPacket* packet, bool ack = true) = 0;
+		virtual bool Send(LoRaPacket* packet, bool ack = true) = 0;
 		//process any incoming packets from the modem
 		virtual void ProcessIncoming() = 0;
 };

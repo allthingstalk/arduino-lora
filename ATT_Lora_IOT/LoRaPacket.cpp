@@ -1,5 +1,5 @@
 /*
-	LoraPacket.cpp - SmartLiving.io Arduino library 
+	LoRaPacket.cpp - SmartLiving.io Arduino library 
 */
 
 

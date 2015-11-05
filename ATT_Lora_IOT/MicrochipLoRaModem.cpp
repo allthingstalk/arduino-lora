@@ -89,7 +89,7 @@ bool MicrochipLoRaModem::Start()
 	return expectOK() && expectString(STR_ACCEPTED);
 }
 
-bool MicrochipLoRaModem::Send(LoraPacket* packet, bool ack)
+bool MicrochipLoRaModem::Send(LoRaPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(microchipSendBuffer);
 	Serial.println("Sending payload: ");
