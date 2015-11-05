@@ -2,7 +2,7 @@
 	ATT_IOT.cpp - SmartLiving.io LoRa Arduino library 
 */
 
-#include "ATT_Lora_IOT.h"
+#include "ATT_LoRa_IOT.h"
 //#include <arduino.h>
 
 
