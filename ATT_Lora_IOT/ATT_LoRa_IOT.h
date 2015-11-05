@@ -12,7 +12,7 @@ Original author: Jan Bogaerts (2015)
 #include <string.h>
 
 #include "LoRaModem.h"
-#include "LoraPacket.h"
+#include "LoRaPacket.h"
 
 
 /////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ class ATTDevice
 		
 	private:	
 		//builds the content that has to be sent to the cloud using mqtt (either a csv value or a json string)
-		LoraPacket _data;
+		LoRaPacket _data;
 		LoRaModem* _modem;
 		short _maxRetries;								//the max nr of times that a send function will try to resend a message.
 		unsigned long _lastTimeSent;					//the last time that a message was sent, so we can block sending if user calls send to quickly
