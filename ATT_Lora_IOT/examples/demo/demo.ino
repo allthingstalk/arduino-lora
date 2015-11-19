@@ -35,10 +35,10 @@ void setup()
 void loop() 
 {
   bool sensorRead = digitalRead(DigitalSensor);      // read status Digital Sensor
-  if (sensorVal != sensorRead)                       // verify if value has changed
+  if (sensorRead == 1)                               // verify if value has changed
   {
-    sensorVal = sensorRead;
-    SendValue(sensorRead);
+    sensorVal = !sensorVal;
+    SendValue(sensorVal);
   }
   delay(100);
 }

@@ -8,7 +8,7 @@ Original author: Jan Bogaerts (2015)
 
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include <ADXL345.h>
+#include <MMA7660.h>
 #include "ATT_LoRa_IOT.h"
 #include "keys.h"
 #include "MicrochipLoRaModem.h"
@@ -21,7 +21,7 @@ Original author: Jan Bogaerts (2015)
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
-ADXL345 accelemeter;
+MMA7660 accelemeter;
 SoftwareSerial SoftSerial(20, 21);                  //reading GPS values from serial connection with GPS
 unsigned char buffer[64];                           // buffer array for data receive over serial port
 int count=0;  
@@ -32,46 +32,46 @@ float latitude;
 float altitude;
 float timestamp;
 
-int prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
+int8_t prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
 unsigned long prevCoordinatesAt;                    //only send the coordinates every 15 seconds, so we need to keep track of the time.
 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
 bool wasMoving = false;                                         
-bool wasMovingDelay = false;                                    //we delay the switch to 'wasMoving = false' for 10 minutes, in order to compensate for short stops (ex: stopping at a traffic light). This cuts down on the number of messages that we send (expensive)
-unsigned long movemementStoppedAt;                              //the moment that movement stopped, so we can add a delay of 10 minutes (amount of time that there can't be any movement) before actually changing the state to 'none-moving'.
+bool wasMovingDelay = false;                                            //we delay the switch to 'wasMoving = false' for 10 minutes, in order to compensate for short stops (ex: stopping at a traffic light). This cuts down on the number of messages that we send (expensive)
+unsigned long movemementStoppedAt;                                      //the moment that movement stopped, so we can add a delay of 10 minutes (amount of time that there can't be any movement) before actually changing the state to 'none-moving'.
 
 void setup() 
 {
-  accelemeter.powerOn();                                        //accelerometer is always running, so we can check when the object is moving around or not.
+  accelemeter.init();                                                   //accelerometer is always running, so we can check when the object is moving around or not.
   SoftSerial.begin(9600); 
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());                    //init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());                            //init the baud rate of the serial connection so that it's ok for the modem
   
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
   {
     Serial.println("retrying...");
     delay(200);
   }
-  accelemeter.readXYZ(&prevX, &prevY, &prevZ);                  //get the current state of the accelerometer, so we can use this info in the loop as something to compare against.
+  accelemeter.getXYZ(&prevX, &prevY, &prevZ);                           //get the current state of the accelerometer, so we can use this info in the loop as something to compare against.
 }
 
 void loop() 
 {
   if(isMoving() == true)
   {
-      wasMovingDelay = false;                           //reset this flag every time that movement is detected, so that we are prepared to capture a delay to move 'wasMoving' back to false.
+      wasMovingDelay = false;                                           //reset this flag every time that movement is detected, so that we are prepared to capture a delay to move 'wasMoving' back to false.
       if(wasMoving == false)
       {
           Serial.println("movement detected");
           //optional improvement: only turn on the gps when it is used: while the device is moving.
           wasMoving = true;
           Device.Send(true, PUSH_BUTTON);
-          prevCoordinatesAt = millis();                               //when movement begins, we always wait for 'GPS_DATA_EVERY' amount of time before sending the first gps coordinates (unless movement stopped earlier)
+          prevCoordinatesAt = millis();                                 //when movement begins, we always wait for 'GPS_DATA_EVERY' amount of time before sending the first gps coordinates (unless movement stopped earlier)
       }
-      if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())              //only send every 15 seconds, so we don't swamp the system.
+      if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())                //only send every 15 seconds, so we don't swamp the system.
       {
-         SendCoordinates();                                 //send the coordinates over.
+         SendCoordinates();                                             //send the coordinates over.
          prevCoordinatesAt = millis();
       }
   }
@@ -82,22 +82,22 @@ void loop()
         movemementStoppedAt = millis();
         wasMovingDelay = true;
      }
-     else if(movemementStoppedAt + NO_MOVE_DELAY <= millis())   //only change the state when the delay period has passed.
+     else if(movemementStoppedAt + NO_MOVE_DELAY <= millis())           //only change the state when the delay period has passed.
      {
         Serial.println("movement stopped");
         //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
         //optional improvement: turn off the gps module
         wasMoving = false;
-        SendCoordinates();                                 //when we have stopped moving, best to report the final destination point.
+        SendCoordinates();                                              //when we have stopped moving, best to report the final destination point.
     }
   }
-  delay(100);                                               //sample the accelerometer quickly -> not so costly.
+  delay(100);                                                           //sample the accelerometer quickly -> not so costly.
 }
 
 bool isMoving()
 {
-  int x,y,z;
-  accelemeter.readXYZ(&x, &y, &z);
+  int8_t x,y,z;
+  accelemeter.getXYZ(&x, &y, &z);
   //Serial.print("x: "); Serial.print(x); Serial.print(", y: "); Serial.print(y); Serial.print(", z: "); Serial.println(z);
   bool result = (abs(prevX - x) + abs(prevY - y) + abs(prevZ - z)) > MOVEMENTTRESHOLD;
   prevX = x;
@@ -110,7 +110,7 @@ bool isMoving()
 void SendCoordinates()
 {
   Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
-  while(readCoordinates() == false) delay(300);      //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
+  while(readCoordinates() == false) delay(300);                 //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
          
   Device.Queue(longitude);
   Device.Queue(latitude);
@@ -131,16 +131,16 @@ void SendCoordinates()
 //returns: true when gps coordinates were found in the input, otherwise false.
 bool readCoordinates()
 {
-    bool foundGPGGA = false;                        //sensor can return multiple types of data, need to capture lines that start with $GPGGA
+    bool foundGPGGA = false;                                    //sensor can return multiple types of data, need to capture lines that start with $GPGGA
     if (SoftSerial.available())                     
     {
-        while(SoftSerial.available())               // reading data into char array
+        while(SoftSerial.available())                           // reading data into char array
         {
-            buffer[count++]=SoftSerial.read();      // store the received data in a temp buffer for further processing later on
+            buffer[count++]=SoftSerial.read();                  // store the received data in a temp buffer for further processing later on
             if(count == 64)break;
         }
-        foundGPGGA = count > 60 && ExtractValues();  //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
-        clearBufferArray();                          // call clearBufferArray function to clear the stored data from the array
+        foundGPGGA = count > 60 && ExtractValues();             //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
+        clearBufferArray();                                     // call clearBufferArray function to clear the stored data from the array
     }
     return foundGPGGA;
 }

@@ -6,7 +6,7 @@ Original author: Jan Bogaerts (2015)
 */
 
 #include <Wire.h>
-#include <ADXL345.h>
+#include <MMA7660.h>
 #include "ATT_LoRa_IOT.h"
 #include "keys.h"
 #include "MicrochipLoRaModem.h"
@@ -14,7 +14,7 @@ Original author: Jan Bogaerts (2015)
 #define SERIAL_BAUD 57600
 
 
-ADXL345 accelemeter;
+MMA7660 accelemeter;
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
@@ -22,19 +22,19 @@ ATTDevice Device(&Modem);
 
 void setup() 
 {
-  accelemeter.powerOn();
+  accelemeter.init();
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
 
-double xyz[3];
-int x,y,z; 
+float accx, accy, accz;
+int8_t x,y,z; 
 
 void loop() 
 {
-  accelemeter.readXYZ(&x, &y, &z);
+  accelemeter.getXYZ(&x, &y, &z);
   Serial.print("values of X , Y , Z: ");
   Serial.print(x);
   Serial.print(" , ");
@@ -42,14 +42,14 @@ void loop()
   Serial.print(" , ");
   Serial.println(z);
   
-  accelemeter.getAcceleration(xyz);
+  accelemeter.getAcceleration(&accx, &accy, &accz);
   Serial.println("accleration of X/Y/Z: ");
   Serial.print("x: ");
-	Serial.print(xyz[0]);
+	Serial.print(accx);
   Serial.print(" g, y:");
-	Serial.print(xyz[1]);
+	Serial.print(accy);
 	Serial.print(" g, z:");
-	Serial.print(xyz[2]);
+	Serial.print(accz);
 	Serial.println(" g");
 	Serial.println("*************");
   //SendValue();
@@ -59,9 +59,9 @@ void loop()
 
 void SendValue()
 {
-  Device.Queue((float)xyz[0]);
-  Device.Queue((float)xyz[1]);
-  Device.Queue((float)xyz[2]);
+  Device.Queue(accx);
+  Device.Queue(accy);
+  Device.Queue(accz);
   Device.Send(ACCELEROMETER);
 }
 

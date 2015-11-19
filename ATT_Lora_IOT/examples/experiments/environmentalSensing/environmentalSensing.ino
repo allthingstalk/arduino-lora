@@ -18,14 +18,12 @@ Original author: Jan Bogaerts (2015)
 #define LightSensorPin A4
 #define SoundSensorPin A2
 
-#define SEND_EVERY 1800000
+#define SEND_EVERY 3000000
 
 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 AirQuality2 airqualitysensor;
-
-unsigned long lastValueSendAt;									//the time when the last value was send	
 
 void setup() 
 {
@@ -39,21 +37,19 @@ void setup()
     Serial.println("retrying...");
     delay(200);
   }
-  Device.SetMaxSendRetry(-1);								//for this use case we want to send the measurement or block until we have, cause that's the primary function of this device: capture and transmit the value.
+  Device.SetMaxSendRetry(-1);                                   //for this use case we want to send the measurement or block until we have, cause that's the primary function of this device: capture and transmit the value.
   
   initTPH();
   initAirQuality();
   initLightSensor();
   initSoundSensor();
-  lastValueSendAt = millis();
 }
 
 void loop() 
 {
   Serial.print("delay for: ");
-  Serial.println(SEND_EVERY - millis() - lastValueSendAt);
-  delay(lastValueSendAt - millis() + SEND_EVERY);
-  lastValueSendAt = millis();       //we start the timer before we send everything, so we send every 180.000, not every 180.000 + time it took to send prev batch.
+  Serial.println(SEND_EVERY);
+  delay(SEND_EVERY);
   processTPH();
   processAirQuality();
   processLightSensor();
@@ -83,7 +79,6 @@ void initLightSensor()
 void processLightSensor()
 {
   float sensorValue = analogRead(LightSensorPin);
-  sensorValue = (float)(1023 - sensorValue) * 10 / sensorValue;
   Serial.print("light intensity: ");
   Serial.println(sensorValue);
   Device.Send(sensorValue, LIGHT_SENSOR);

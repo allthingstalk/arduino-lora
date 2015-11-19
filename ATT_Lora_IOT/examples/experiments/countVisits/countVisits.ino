@@ -17,13 +17,13 @@ int doorSensor = 4;
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
-#define SEND_MAX_EVERY 30000								//the mimimum time between 2 consecutive updates of visit counts that are sent to the cloud (can be longer, if the value hasn't changed)
+#define SEND_MAX_EVERY 30000                                //the mimimum time between 2 consecutive updates of visit counts that are sent to the cloud (can be longer, if the value hasn't changed)
 
 bool prevButtonState;
 bool prevDoorSensor;
 short visitCount = 0;                                       //keeps track of the nr of visitors         
-short prevVisitCountSent = 0;								//we only send visit count max every 30 seconds, but only if the value has changed, so keep track of the value that was last sent to the cloud.
-unsigned long lastSentAt = 0;								//the time when the last visitcount was sent to the cloud.
+short prevVisitCountSent = 0;                               //we only send visit count max every 30 seconds, but only if the value has changed, so keep track of the value that was last sent to the cloud.
+unsigned long lastSentAt = 0;                               //the time when the last visitcount was sent to the cloud.
 bool isConnected = false;                                   //keeps track of the connection state.
 
 void setup() 
@@ -37,7 +37,7 @@ void setup()
   prevButtonState = digitalRead(pushButton);                //set the initial state
   prevDoorSensor = digitalRead(doorSensor);                 //set the initial state
   
-  Device.SetMaxSendRetry(5);								//for this use case we don't want to get stuck too long in sending data, we primarely want to capture visits and count them, sending the count can be done later on.
+  Device.SetMaxSendRetry(5);                                //for this use case we don't want to get stuck too long in sending data, we primarely want to capture visits and count them, sending the count can be done later on.
 }
 
 void tryConnect()
@@ -46,8 +46,8 @@ void tryConnect()
   if(isConnected == true)
   {
      Serial.println("Ready to send data");
-	 //todo: improvement: retrieved the count stored on disk so that it is not lost after power down
-	 sendVisitCount();									//always send the value at initial connection, keep the platform in sync with the latest change on the device.
+     //todo: improvement: retrieved the count stored on disk so that it is not lost after power down
+     sendVisitCount();                                  //always send the value at initial connection, keep the platform in sync with the latest change on the device.
   } 
   else
      Serial.println("connection will by retried later");  
@@ -62,7 +62,7 @@ void loop()
   processDoorSensor();
   delay(100);
   if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())
-	sendVisitCount();
+    sendVisitCount();
 }
 
 void sendVisitCount()
