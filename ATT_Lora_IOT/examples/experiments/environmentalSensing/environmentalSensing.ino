@@ -94,9 +94,11 @@ void initLightSensor()
 void processLightSensor()
 {
   float sensorValue = analogRead(LightSensorPin);
+  float Rsensor= sensorValue * 3.3 / 1023;							//convert to lux, this is based on the voltage that the sensor receives
+  Rsensor = pow(10, Rsensor);
   Serial.print("light intensity: ");
-  Serial.println(sensorValue);
-  Device.Send(sensorValue, LIGHT_SENSOR);
+  Serial.println(Rsensor);
+  Device.Send(Rsensor, LIGHT_SENSOR);
 }
 
 void initTPH()

@@ -12,7 +12,7 @@ Original author: Jan Bogaerts (2015)
 
 #define SERIAL_BAUD 57600
 
-#define AnalogSensor A5
+#define AnalogSensor A4
 
 
 MicrochipLoRaModem Modem(&Serial1);
@@ -34,10 +34,11 @@ float value = 0;
 void loop() 
 {
   int sensorValue = analogRead(AnalogSensor); 
-  //float Rsensor= exp(float(sensorValue)/80.0);
-  Serial.println(sensorValue);
-  if((int)value != sensorValue){			//we round it off, so we don't send to many value changes
-    value = sensorValue;
+  float Rsensor= sensorValue * 3.3 / 1023;
+  Rsensor = pow(10, Rsensor);
+  Serial.println(Rsensor);
+  if((int)value != Rsensor){			//we round it off, so we don't send to many value changes
+    value = Rsensor;
     SendValue();
   }
   delay(300);
