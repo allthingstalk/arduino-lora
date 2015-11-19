@@ -34,10 +34,10 @@ float value = 0;
 void loop() 
 {
   int sensorValue = analogRead(AnalogSensor); 
-  float Rsensor=(float)(1023-sensorValue)*10/sensorValue;
-  Serial.println(Rsensor);
-  if((int)value != (int)Rsensor){			//we round it off, so we don't send to many value changes
-    value = Rsensor;
+  //float Rsensor= exp(float(sensorValue)/80.0);
+  Serial.println(sensorValue);
+  if((int)value != sensorValue){			//we round it off, so we don't send to many value changes
+    value = sensorValue;
     SendValue();
   }
   delay(300);

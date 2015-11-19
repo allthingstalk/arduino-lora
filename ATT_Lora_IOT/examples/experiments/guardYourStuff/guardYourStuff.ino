@@ -1,8 +1,24 @@
-/*
-AllThingsTalk - SmartLiving.io LoRa Arduino experiments
-Released into the public domain.
 
-Original author: Jan Bogaerts (2015)
+/*
+  AllThingsTalk developer cloud IoT experiment for LoRa
+  version 1.0 dd 09/11/2015
+  Original author: Jan Bogaerts 2015
+  
+  This sketch is used for the guard my stuff experiment which is included in the AllThingsTalk LoRa rapid development kit
+  http://www.allthingstalk.com/lora-rapid-development-kit
+
+  This example sketch is based on the Proxilmus IoT network in Belgium
+
+  The sketch and libs included support the MicroChip RN2483 LoRa module & Embit LoRa modem EMB-LR1272
+  
+  ### Prerequisites & instructions
+  visit: http://docs.smartliving.io/kits/lora/experiments/EnvironmentalSensing/
+  
+  ### Troubleshooting
+  
+  for PIN layout on the NodeMCU, check: https://github.com/esp8266/Arduino/blob/master/doc/boards.md#nodemcu-1-0
+
+
 */
 
 
@@ -14,16 +30,16 @@ Original author: Jan Bogaerts (2015)
 #include "MicrochipLoRaModem.h"
 
 #define SERIAL_BAUD 57600
-#define MOVEMENTTRESHOLD 20                         //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
-#define NO_MOVE_DELAY 60000                        //amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
-#define GPS_DATA_EVERY 90000                       //the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
+#define MOVEMENTTRESHOLD 20                         	//amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
+#define NO_MOVE_DELAY 60000                        		//amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
+#define GPS_DATA_EVERY 90000                       		//the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 MMA7660 accelemeter;
-SoftwareSerial SoftSerial(20, 21);                  //reading GPS values from serial connection with GPS
-unsigned char buffer[64];                           // buffer array for data receive over serial port
+SoftwareSerial SoftSerial(20, 21);                  	//reading GPS values from serial connection with GPS
+unsigned char buffer[64];                           	// buffer array for data receive over serial port
 int count=0;  
 
 //variables for the coordinates (GPS)
@@ -33,7 +49,7 @@ float altitude;
 float timestamp;
 
 int8_t prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
-unsigned long prevCoordinatesAt;                    //only send the coordinates every 15 seconds, so we need to keep track of the time.
+unsigned long prevCoordinatesAt;                    	//only send the coordinates every 15 seconds, so we need to keep track of the time.
 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
@@ -150,12 +166,12 @@ bool readCoordinates()
 bool ExtractValues()
 {
     unsigned char start = count;
-    while(buffer[start] != '$')     //find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
+    while(buffer[start] != '$')     							//find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
     {
-        if(start == 0) break;                       //it's unsigned char, so we can't check on <= 0
+        if(start == 0) break;                       			//it's unsigned char, so we can't check on <= 0
         start--;
     }
-    start++;                                        //remove the '$', don't need to compare with that.
+    start++;                                        			//remove the '$', don't need to compare with that.
     if(start + 4 < 64 && buffer[start] == 'G' && buffer[start+1] == 'P' && buffer[start+2] == 'G' && buffer[start+3] == 'G' && buffer[start+4] == 'A')      //we found the correct line, so extract the values.
     {
         start+=6;

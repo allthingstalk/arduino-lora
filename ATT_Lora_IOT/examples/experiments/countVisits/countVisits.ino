@@ -1,8 +1,23 @@
 /*
-AllThingsTalk - SmartLiving.io LoRa Arduino experiments
-Released into the public domain.
+  AllThingsTalk developer cloud IoT experiment for LoRa
+  version 1.0 dd 09/11/2015
+  Original author: Jan Bogaerts 2015
+  
+  This sketch is used for the count visits experiment which is included in the AllThingsTalk LoRa rapid development kit
+  http://www.allthingstalk.com/lora-rapid-development-kit
 
-Original author: Jan Bogaerts (2015)
+  This example sketch is based on the Proxilmus IoT network in Belgium
+
+  The sketch and libs included support the MicroChip RN2483 LoRa module & Embit LoRa modem EMB-LR1272
+  
+  ### Prerequisites & instructions
+  visit: http://docs.smartliving.io/kits/lora/experiments/CountVisits/
+  
+  ### Troubleshooting
+  
+  for PIN layout on the NodeMCU, check: https://github.com/esp8266/Arduino/blob/master/doc/boards.md#nodemcu-1-0
+
+
 */
 
 #include <Wire.h>
@@ -47,7 +62,7 @@ void tryConnect()
   {
      Serial.println("Ready to send data");
      //todo: improvement: retrieved the count stored on disk so that it is not lost after power down
-     sendVisitCount();                                  //always send the value at initial connection, keep the platform in sync with the latest change on the device.
+     sendVisitCount();                                  	//always send the value at initial connection, keep the platform in sync with the latest change on the device.
   } 
   else
      Serial.println("connection will by retried later");  
@@ -56,19 +71,19 @@ void tryConnect()
 
 void loop() 
 {
-  if(isConnected == false)                                          //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
+  if(isConnected == false)                                  //if we previously failed to connect to the cloud, try again now.  This technique allows us to already collect visits before actually having established the connection.
     tryConnect();
   processButton();
   processDoorSensor();
   delay(100);
-  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())
+  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())	// only send a message when something has changed and SEND_MAX_EVERY has been exceeded
     sendVisitCount();
 }
 
 void sendVisitCount()
 {
   Serial.print("send visit count: "); Serial.println(visitCount);
-  Device.Send(visitCount, INTEGER_SENSOR);                       //we also send over the visit count so that the cloud is always in sync with the device (connection could have been established after the counter was changed since last connection).
+  Device.Send(visitCount, INTEGER_SENSOR);                  //we also send over the visit count so that the cloud is always in sync with the device (connection could have been established after the counter was changed since last connection).
   prevVisitCountSent = visitCount;
   lastSentAt = millis();
 }
@@ -84,6 +99,7 @@ void processDoorSensor()
     {
         Serial.println("door closed");
         visitCount++;                                           //the door was opened and closed again, so increment the counter
+		Serial.print("VisitCount: ");Serial.println(visitCount);
     }
     else
         Serial.println("door open");
@@ -98,7 +114,7 @@ void processButton()
      prevButtonState = sensorRead;
      if(sensorRead == true)                                         
      {
-        Serial.println("button pressed");
+        Serial.println("button pressed, counter reset");
         visitCount = 0;
      }
      else

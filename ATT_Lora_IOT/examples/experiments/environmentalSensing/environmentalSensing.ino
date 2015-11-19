@@ -1,8 +1,23 @@
 /*
-AllThingsTalk - SmartLiving.io LoRa Arduino experiments
-Released into the public domain.
+  AllThingsTalk developer cloud IoT experiment for LoRa
+  version 1.0 dd 09/11/2015
+  Original author: Jan Bogaerts 2015
+  
+  This sketch is used for the environmental sensing experiment which is included in the AllThingsTalk LoRa rapid development kit
+  http://www.allthingstalk.com/lora-rapid-development-kit
 
-Original author: Jan Bogaerts (2015)
+  This example sketch is based on the Proxilmus IoT network in Belgium
+
+  The sketch and libs included support the MicroChip RN2483 LoRa module & Embit LoRa modem EMB-LR1272
+  
+  ### Prerequisites & instructions
+  visit: http://docs.smartliving.io/kits/lora/experiments/EnvironmentalSensing/
+  
+  ### Troubleshooting
+  
+  for PIN layout on the NodeMCU, check: https://github.com/esp8266/Arduino/blob/master/doc/boards.md#nodemcu-1-0
+
+
 */
 
 #include <Wire.h>
