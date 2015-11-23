@@ -1,25 +1,19 @@
-
-/*
-  AllThingsTalk developer cloud IoT experiment for LoRa
-  version 1.0 dd 09/11/2015
-  Original author: Jan Bogaerts 2015
-  
-  This sketch is used for the guard my stuff experiment which is included in the AllThingsTalk LoRa rapid development kit
-  http://www.allthingstalk.com/lora-rapid-development-kit
-
-  This example sketch is based on the Proxilmus IoT network in Belgium
-
-  The sketch and libs included support the MicroChip RN2483 LoRa module & Embit LoRa modem EMB-LR1272
-  
-  ### Prerequisites & instructions
-  visit: http://docs.smartliving.io/kits/lora/experiments/EnvironmentalSensing/
-  
-  ### Troubleshooting
-  
-  for PIN layout on the NodeMCU, check: https://github.com/esp8266/Arduino/blob/master/doc/boards.md#nodemcu-1-0
-
-
-*/
+/****
+ *  AllThingsTalk Developer Cloud IoT experiment for LoRa
+ *  version 1.0 dd 09/11/2015
+ *  Original author: Jan Bogaerts 2015
+ *
+ *  This sketch is part of the AllThingsTalk LoRa rapid development kit
+ *  -> http://www.allthingstalk.com/lora-rapid-development-kit
+ *
+ *  This example sketch is based on the Proxilmus IoT network in Belgium
+ *  The sketch and libs included support the
+ *  - MicroChip RN2483 LoRa module
+ *  - Embit LoRa modem EMB-LR1272
+ *  
+ *  For more information, please check our documentation
+ *  -> http://docs.smartliving.io/kits/lora
+ */
 
 
 #include <Wire.h>

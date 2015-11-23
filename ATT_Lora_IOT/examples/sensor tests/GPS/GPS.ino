@@ -1,9 +1,19 @@
-/*
-AllThingsTalk - SmartLiving.io LoRa Arduino demos
-Released into the public domain.
-
-Original author: Jan Bogaerts (2015)
-*/
+/****
+ *  AllThingsTalk Developer Cloud IoT experiment for LoRa
+ *  version 1.0 dd 09/11/2015
+ *  Original author: Jan Bogaerts 2015
+ *
+ *  This sketch is part of the AllThingsTalk LoRa rapid development kit
+ *  -> http://www.allthingstalk.com/lora-rapid-development-kit
+ *
+ *  This example sketch is based on the Proxilmus IoT network in Belgium
+ *  The sketch and libs included support the
+ *  - MicroChip RN2483 LoRa module
+ *  - Embit LoRa modem EMB-LR1272
+ *  
+ *  For more information, please check our documentation
+ *  -> http://docs.smartliving.io/kits/lora
+ */
 
 #include <Wire.h>
 #include <SoftwareSerial.h>
@@ -32,9 +42,9 @@ void setup()
   Serial.println("Ready to send data");
 }
 
-float longitude;
-float latitude;
-float altitude;
+double longitude;
+double latitude;
+double altitude;
 float timestamp;
 
 void loop() 
@@ -56,7 +66,7 @@ void SendValue()
   Serial.print(", lat: ");
   Serial.print(latitude, 4);
   Serial.print(", alt: ");
-  Serial.print(altitude);
+  Serial.print(altitude, 4);
   Serial.print(", time: ");
   Serial.println(timestamp);
 }
@@ -71,7 +81,8 @@ bool readCoordinates()
 			buffer[count++]=SoftSerial.read();      // writing data into array
 			if(count == 64)break;
 		}
-		//Serial.println(count);
+		//Serial.println(count); 
+   Serial.println((char*)buffer);
 		foundGPGGA = count > 60 && ExtractValues();  //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
 		clearBufferArray();                         // call clearBufferArray function to clear the stored data from the array
 		count = 0;                                  // set counter of while loop to zero
@@ -106,15 +117,17 @@ bool ExtractValues()
 		return false;
 }
 
-float ExtractValue(unsigned char& start)
+double ExtractValue(unsigned char& start)
 {
 	unsigned char end = start + 1;
 	while(end < count && buffer[end] != ',')		//find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
 		end++;
 	buffer[end] = 0;								//end the string, so we can create a string object from the sub string -> easy to convert to float.
-	float result = 0.0;
+	double result = 0.0;
 	if(end != start + 1)					//if we only found a ',', then there is no value.
 		result = String((const char*)(buffer + start)).toFloat();
+  //double test = strtod("1.12111111");
+ // Serial.println(test);
 	start = end + 1;
 	return result;
 }

@@ -75,7 +75,7 @@ unsigned char LoRaPacket::calculateCheckSum(unsigned char* toSend, short len)
 	{
 		toSend = (unsigned char*)&sum;
 		int newsum = 0;
-		len = 4;
+		len = sizeof(int);
 		for(int i = 0; i < len; i++)
 			newsum += toSend[i];
 		sum = newsum;
