@@ -42,9 +42,9 @@ void setup()
   Serial.println("Ready to send data");
 }
 
-double longitude;
-double latitude;
-double altitude;
+float longitude;
+float latitude;
+float altitude;
 float timestamp;
 
 void loop() 
@@ -73,7 +73,7 @@ void SendValue()
 
 bool readCoordinates()
 {
-    bool foundGPGGA = false;					//sensor can return multiple types of data, need to capture lines that start with $GPGGA
+  bool foundGPGGA = false;					//sensor can return multiple types of data, need to capture lines that start with $GPGGA
 	if (SoftSerial.available())                     // if date is coming from software serial port ==> data is coming from SoftSerial shield
 	{
 		while(SoftSerial.available())               // reading data into char array
@@ -82,7 +82,7 @@ bool readCoordinates()
 			if(count == 64)break;
 		}
 		//Serial.println(count); 
-   Serial.println((char*)buffer);
+    //Serial.println((char*)buffer);
 		foundGPGGA = count > 60 && ExtractValues();  //if we have less then 60 characters, then we have bogus input, so don't try to parse it or process the values
 		clearBufferArray();                         // call clearBufferArray function to clear the stored data from the array
 		count = 0;                                  // set counter of while loop to zero
@@ -96,16 +96,16 @@ bool ExtractValues()
 	while(buffer[start] != '$')		//find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
 	{
 	    if(start == 0) break;						//it's unsigned char, so we can't check on <= 0
-		start--;
+		  start--;
 	}
 	start++;										//remove the '$', don't need to compare with that.
 	if(start + 4 < 64 && buffer[start] == 'G' && buffer[start+1] == 'P' && buffer[start+2] == 'G' && buffer[start+3] == 'G' && buffer[start+4] == 'A')		//we found the correct line, so extract the values.
 	{
-        start+=6;
+    start+=6;
 		timestamp = ExtractValue(start);
-		longitude = ExtractValue(start) / 100;
+		longitude = ConvertDegrees(ExtractValue(start) / 100);
 		start = Skip(start);	
-		latitude = ExtractValue(start)  / 100;
+		latitude = ConvertDegrees(ExtractValue(start)  / 100);
 		start = Skip(start);
 		start = Skip(start);
 		start = Skip(start);
@@ -117,20 +117,25 @@ bool ExtractValues()
 		return false;
 }
 
-double ExtractValue(unsigned char& start)
+float ExtractValue(unsigned char& start)
 {
 	unsigned char end = start + 1;
 	while(end < count && buffer[end] != ',')		//find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
 		end++;
 	buffer[end] = 0;								//end the string, so we can create a string object from the sub string -> easy to convert to float.
-	double result = 0.0;
+	float result = 0.0;
 	if(end != start + 1)					//if we only found a ',', then there is no value.
 		result = String((const char*)(buffer + start)).toFloat();
-  //double test = strtod("1.12111111");
- // Serial.println(test);
 	start = end + 1;
 	return result;
 }
+
+float ConvertDegrees(float input)
+{
+    float fractional = input - (int)input;
+    return (int)input + (fractional / 60.0) * 100.0;
+}
+
 
 unsigned char Skip(unsigned char start)
 {

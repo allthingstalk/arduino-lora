@@ -24,16 +24,16 @@
 #include "MicrochipLoRaModem.h"
 
 #define SERIAL_BAUD 57600
-#define MOVEMENTTRESHOLD 20                         	//amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
-#define NO_MOVE_DELAY 60000                        		//amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
-#define GPS_DATA_EVERY 90000                       		//the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
+#define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
+#define NO_MOVE_DELAY 60000                             //amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
+#define GPS_DATA_EVERY 90000                            //the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 MMA7660 accelemeter;
-SoftwareSerial SoftSerial(20, 21);                  	//reading GPS values from serial connection with GPS
-unsigned char buffer[64];                           	// buffer array for data receive over serial port
+SoftwareSerial SoftSerial(20, 21);                      //reading GPS values from serial connection with GPS
+unsigned char buffer[64];                               // buffer array for data receive over serial port
 int count=0;  
 
 //variables for the coordinates (GPS)
@@ -43,7 +43,7 @@ float altitude;
 float timestamp;
 
 int8_t prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
-unsigned long prevCoordinatesAt;                    	//only send the coordinates every 15 seconds, so we need to keep track of the time.
+unsigned long prevCoordinatesAt;                        //only send the coordinates every 15 seconds, so we need to keep track of the time.
 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
@@ -160,19 +160,19 @@ bool readCoordinates()
 bool ExtractValues()
 {
     unsigned char start = count;
-    while(buffer[start] != '$')     							//find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
+    while(buffer[start] != '$')                                 //find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
     {
-        if(start == 0) break;                       			//it's unsigned char, so we can't check on <= 0
+        if(start == 0) break;                                   //it's unsigned char, so we can't check on <= 0
         start--;
     }
-    start++;                                        			//remove the '$', don't need to compare with that.
+    start++;                                                    //remove the '$', don't need to compare with that.
     if(start + 4 < 64 && buffer[start] == 'G' && buffer[start+1] == 'P' && buffer[start+2] == 'G' && buffer[start+3] == 'G' && buffer[start+4] == 'A')      //we found the correct line, so extract the values.
     {
         start+=6;
         timestamp = ExtractValue(start);
-        longitude = ExtractValue(start) / 100;
+        latitude = ConvertDegrees(ExtractValue(start) / 100);
         start = Skip(start);    
-        latitude = ExtractValue(start)  / 100;
+        longitude = ConvertDegrees(ExtractValue(start)  / 100);
         start = Skip(start);
         start = Skip(start);
         start = Skip(start);
@@ -183,6 +183,13 @@ bool ExtractValues()
     else
         return false;
 }
+
+float ConvertDegrees(float input)
+{
+    float fractional = input - (int)input;
+    return (int)input + (fractional / 60.0) * 100.0;
+}
+
 
 //exracts a single value out of the stream received from the device and returns this value.
 float ExtractValue(unsigned char& start)
