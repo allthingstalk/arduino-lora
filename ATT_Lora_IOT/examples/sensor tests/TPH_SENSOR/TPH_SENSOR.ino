@@ -45,7 +45,7 @@ void loop()
   float bmp_temp = tph.readTemperatureBMP();
   float sht_temp = tph.readTemperatureSHT();
   float hum = tph.readHumidity();
-  int32_t pres = tph.readPressure();
+  float pres = tph.readPressure();
   
   Serial.print("temp: ");
   Serial.print(temp);
@@ -67,7 +67,7 @@ void loop()
 
   Device.Send(temp, TEMPERATURE_SENSOR);
   Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send((short)pres, PRESSURE_SENSOR);
+  Device.Send(pres, PRESSURE_SENSOR);
   
   delay(3000);
 }

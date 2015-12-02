@@ -106,7 +106,7 @@ void processTPH()
 {
   float temp = tph.readTemperature();
   float hum = tph.readHumidity();
-  int32_t pres = tph.readPressure();
+  float pres = tph.readPressure();
   
   Serial.print("temp: ");
   Serial.print(temp);
@@ -120,7 +120,7 @@ void processTPH()
 
   Device.Send(temp, TEMPERATURE_SENSOR);
   Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send((short)pres, PRESSURE_SENSOR);
+  Device.Send(pres, PRESSURE_SENSOR);
 }
 
 void initAirQuality()
