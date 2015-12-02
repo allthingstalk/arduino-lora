@@ -6,9 +6,9 @@ Original author: Jan Bogaerts (2015)
 */
 
 #include <Wire.h>
-#include "ATT_Lora_IOT.h"
+#include <ATT_LoRa_IOT.h>
 //#include "EmbitLoRaMode.h"
-#include "MicrochipLoRaModem.h"
+#include <MicrochipLoRaModem.h>
 #include "keys.h"
 
 #define SERIAL_BAUD 57600

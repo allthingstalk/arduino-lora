@@ -4,7 +4,7 @@
 
 #include "MicrochipLoRaModem.h"
 #include "StringLiterals.h"
-#include "utils.h"
+#include "Utils.h"
 
 #define PORT 0x01
 

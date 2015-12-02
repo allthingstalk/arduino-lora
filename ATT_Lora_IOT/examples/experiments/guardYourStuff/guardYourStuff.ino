@@ -19,9 +19,9 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <MMA7660.h>
-#include "ATT_LoRa_IOT.h"
+#include <ATT_LoRa_IOT.h>
 #include "keys.h"
-#include "MicrochipLoRaModem.h"
+#include <MicrochipLoRaModem.h>
 
 #define SERIAL_BAUD 57600
 #define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
@@ -122,8 +122,8 @@ void SendCoordinates()
   Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
   while(readCoordinates() == false) delay(300);                 //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
          
-  Device.Queue(longitude);
   Device.Queue(latitude);
+  Device.Queue(longitude);
   Device.Queue(altitude);
   Device.Queue(timestamp);
   Device.Send(GPS);

@@ -16,9 +16,9 @@
  */
 
 #include <Wire.h>
-#include "ATT_LoRa_IOT.h"
+#include <ATT_LoRa_IOT.h>
 #include "keys.h"
-#include "MicrochipLoRaModem.h"
+#include <MicrochipLoRaModem.h>
 
 #define SERIAL_BAUD 57600
 
