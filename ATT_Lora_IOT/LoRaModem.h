@@ -8,7 +8,7 @@ Original author: Jan Bogaerts (2015)
 #ifndef LoRaModem_h
 #define LoRaModem_h
 
-#include "LoraPacket.h"
+#include <LoRaPacket.h>
 
 //this class represents the ATT cloud platform.
 class LoRaModem
