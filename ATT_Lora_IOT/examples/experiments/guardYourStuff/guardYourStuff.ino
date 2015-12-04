@@ -25,8 +25,7 @@
 
 #define SERIAL_BAUD 57600
 #define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
-#define NO_MOVE_DELAY 60000                             //amount of time that the accelerometer must report 'no movement' before actually changes state to 'not moving', this is for capturing short stand-stills, like a red-light. -> for commercial products, do time *10
-#define GPS_DATA_EVERY 90000                            //the amount of time between 2 consecutive GPS updates while moving. -> for commercial products, do time * 10
+#define GPS_DATA_EVERY 15000                            //the amount of time between 2 consecutive GPS updates while moving. 
 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
@@ -48,8 +47,6 @@ unsigned long prevCoordinatesAt;                        //only send the coordina
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
 bool wasMoving = false;                                         
-bool wasMovingDelay = false;                                            //we delay the switch to 'wasMoving = false' for 10 minutes, in order to compensate for short stops (ex: stopping at a traffic light). This cuts down on the number of messages that we send (expensive)
-unsigned long movemementStoppedAt;                                      //the moment that movement stopped, so we can add a delay of 10 minutes (amount of time that there can't be any movement) before actually changing the state to 'none-moving'.
 
 void setup() 
 {
@@ -57,6 +54,13 @@ void setup()
   SoftSerial.begin(9600); 
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());                            //init the baud rate of the serial connection so that it's ok for the modem
+  
+  Serial.print("initializing gps");
+  while(readCoordinates() == false){
+	delay(1000);
+	Serial.print(".");
+  }
+  Serial.println();
   
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
   {
@@ -69,8 +73,7 @@ void setup()
 void loop() 
 {
   if(isMoving() == true)
-  {
-      wasMovingDelay = false;                                           //reset this flag every time that movement is detected, so that we are prepared to capture a delay to move 'wasMoving' back to false.
+  {	  
       if(wasMoving == false)
       {
           Serial.println("movement detected");
@@ -78,30 +81,26 @@ void loop()
           wasMoving = true;
           Device.Send(true, PUSH_BUTTON);
           prevCoordinatesAt = millis();                                 //when movement begins, we always wait for 'GPS_DATA_EVERY' amount of time before sending the first gps coordinates (unless movement stopped earlier)
+		  SendCoordinates();                                             //send the coordinates over.
       }
-      if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())                //only send every 15 seconds, so we don't swamp the system.
-      {
-         SendCoordinates();                                             //send the coordinates over.
-         prevCoordinatesAt = millis();
-      }
+	  else
+	      Serial.println("moving");
+      //if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())                //only send every 15 seconds, so we don't swamp the system.
+      //{
+      //   SendCoordinates();                                             //send the coordinates over.
+      //   prevCoordinatesAt = millis();
+     // }
   }
   else if(wasMoving == true)
   {
-     if(wasMovingDelay == false)
-     {
-        movemementStoppedAt = millis();
-        wasMovingDelay = true;
-     }
-     else if(movemementStoppedAt + NO_MOVE_DELAY <= millis())           //only change the state when the delay period has passed.
-     {
-        Serial.println("movement stopped");
-        //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
-        //optional improvement: turn off the gps module
-        wasMoving = false;
-        SendCoordinates();                                              //when we have stopped moving, best to report the final destination point.
-    }
+     Serial.println("movement stopped");
+    //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
+    //optional improvement: turn off the gps module
+    wasMoving = false;
+	Device.Send(false, PUSH_BUTTON);
+    SendCoordinates(); 
   }
-  delay(100);                                                           //sample the accelerometer quickly -> not so costly.
+  delay(1000);                                                           //sample the accelerometer quickly -> not so costly.
 }
 
 bool isMoving()

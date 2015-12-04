@@ -49,99 +49,78 @@ void setup()
   }
   Device.SetMaxSendRetry(-1);                                   //for this use case we want to send the measurement or block until we have, cause that's the primary function of this device: capture and transmit the value.
   
-  initTPH();
-  initAirQuality();
-  initLightSensor();
-  initSoundSensor();
+  initSensors();
 }
 
 void loop() 
 {
   Serial.print("delay for: ");
   Serial.println(SEND_EVERY);
+  ReadSensors();
+  DisplaySensors();
+  SendSensors();
   delay(SEND_EVERY);
-  processTPH();
-  processAirQuality();
-  processLightSensor();
-  processSoundSensor();
 }
 
-void initSoundSensor()
+void initSensors()
 {
-  pinMode(SoundSensorPin,INPUT);
-  processSoundSensor();
+	pinMode(SoundSensorPin,INPUT);
+	pinMode(LightSensorPin,INPUT);
+	tph.begin();
+	airqualitysensor.init(AirQualityPin);
 }
 
-void processSoundSensor()
+void ReadSensors()
 {
-  float sensorValue = analogRead(SoundSensorPin);
-  Serial.print("sound level: ");
-  Serial.println(sensorValue);
-  Device.Send(sensorValue, LOUDNESS_SENSOR);
+	soundValue = analogRead(SoundSensorPin);
+	
+	lightValue = analogRead(LightSensorPin);
+    lightValue = lightValue * 3.3 / 1023;							//convert to lux, this is based on the voltage that the sensor receives
+    lightValue = pow(10, lightValue);
+	
+	temp = tph.readTemperature();
+    hum = tph.readHumidity();
+    pres = tph.readPressure();
+	
+	airValue = airqualitysensor.getRawData();
 }
 
-void initLightSensor()
+void SendSensors()
 {
-  pinMode(LightSensorPin,INPUT);
-  processLightSensor();
+	Device.Send(soundValue, LOUDNESS_SENSOR);
+	Device.Send(lightValue, LIGHT_SENSOR);
+	Device.Send(temp, TEMPERATURE_SENSOR);
+    Device.Send(hum, HUMIDITY_SENSOR);
+    Device.Send(pres, PRESSURE_SENSOR);
+	Device.Send(airValue, AIR_QUALITY_SENSOR);
 }
 
-void processLightSensor()
+void DisplaySensors()
 {
-  float sensorValue = analogRead(LightSensorPin);
-  float Rsensor= sensorValue * 3.3 / 1023;							//convert to lux, this is based on the voltage that the sensor receives
-  Rsensor = pow(10, Rsensor);
-  Serial.print("light intensity: ");
-  Serial.println(Rsensor);
-  Device.Send(Rsensor, LIGHT_SENSOR);
-}
-
-void initTPH()
-{
-  tph.begin();
-  processTPH();
-}
-
-void processTPH()
-{
-  float temp = tph.readTemperature();
-  float hum = tph.readHumidity();
-  float pres = tph.readPressure();
+	Serial.print("sound level: ");
+	Serial.println(soundValue);
+	  
+	Serial.print("light intensity: ");
+	Serial.println(lightValue);
+	  
+	Serial.print("temp: ");
+	Serial.print(temp);
+	  
+	Serial.print(", humidity: ");
+	Serial.print(hum);
+	  
+	Serial.print(", pressure: ");
+	Serial.print(pres);
+	Serial.println();
   
-  Serial.print("temp: ");
-  Serial.print(temp);
-  
-  Serial.print(", humidity: ");
-  Serial.print(hum);
-  
-  Serial.print(", pressure: ");
-  Serial.print(pres);
-  Serial.println();
-
-  Device.Send(temp, TEMPERATURE_SENSOR);
-  Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send(pres, PRESSURE_SENSOR);
-}
-
-void initAirQuality()
-{
-  airqualitysensor.init(AirQualityPin);
-  processAirQuality();
-}
-
-
-void processAirQuality()
-{
-    short value = airqualitysensor.getRawData();
     Serial.print("air quality: ");
-    Serial.println(value);
-    Device.Send(value, AIR_QUALITY_SENSOR);
+    Serial.println(airValue);
 }
 
 
 void serialEvent1()
 {
-  Device.Process();                                                     //for future extensions -> actuators
+	Device.Process();                                                     //for future extensions -> actuators
 }
 
 

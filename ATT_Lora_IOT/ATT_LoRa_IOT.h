@@ -60,23 +60,23 @@ class ATTDevice
 		
 		//send a bool data value to the cloud server for the sensor with the specified id.
 		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
-		void Send(bool value, short id, bool ack = true);
+		bool Send(bool value, short id, bool ack = true);
 		
 		//send an integer value to the cloud server for the sensor with the specified id.
 		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
-		void Send(short value, short id, bool ack = true);
+		bool Send(short value, short id, bool ack = true);
 		
 		//send a string data value to the cloud server for the sensor with the specified id.
 		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
-		void Send(String value, short id, bool ack = true);
+		bool Send(String value, short id, bool ack = true);
 		
 		//send a gloat data value to the cloud server for the sensor with the specified id.
 		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
-		void Send(float value, short id, bool ack = true);
+		bool Send(float value, short id, bool ack = true);
 		
 		//sends the previously built complex data packet to the cloud for the sensor with the specified
 		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
-		void Send(short id, bool ack = true);
+		bool Send(short id, bool ack = true);
 		
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.
@@ -106,11 +106,17 @@ class ATTDevice
 		//set to -1 for continuous until success.
 		void SetMaxSendRetry(short maxRetries) { _maxRetries = maxRetries; };
 		
+		//set the minimum amount of time between 2 consecutive messages that are sent to the cloud.
+		//default value: 15 seconds.
+		//minTimeBetweenSend: the nr of milli seconds that should be between 2 data packets.
+		void SetMinTimeBetweenSend(int minTimeBetweenSend) { _minTimeBetweenSend = minTimeBetweenSend; };
+		
 	private:	
 		//builds the content that has to be sent to the cloud using mqtt (either a csv value or a json string)
 		LoRaPacket _data;
 		LoRaModem* _modem;
 		short _maxRetries;								//the max nr of times that a send function will try to resend a message.
+		int _minTimeBetweenSend;
 		unsigned long _lastTimeSent;					//the last time that a message was sent, so we can block sending if user calls send to quickly
 		
 };

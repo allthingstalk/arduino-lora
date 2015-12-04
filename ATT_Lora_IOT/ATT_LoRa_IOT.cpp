@@ -7,7 +7,7 @@
 
 
 //create the object
-ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY)
+ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY),  _minTimeBetweenSend(MIN_TIME_BETWEEN_SEND)
 {
 	_modem = modem;
 	_lastTimeSent = 0;
@@ -23,9 +23,9 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	_modem->SetNWKSKey(nwksKey);
 	bool result = _modem->Start();								//start the modem up 
 	if(result == true)
-		Serial.println("successfully connected");
+		Serial.println("modem initialized");
 	else
-		Serial.println("failed to connect to LoRa");
+		Serial.println("failed to initialize modem");
 	return result;									//we have created a connection succesfully.
 }
 
@@ -36,51 +36,54 @@ void ATTDevice::Process()
 
 
 //send a data value to the cloud server for the sensor with the specified id.
-void ATTDevice::Send(String value, short id, bool ack)
+bool ATTDevice::Send(String value, short id, bool ack)
 {
 	_data.Add(value);
-	Send(id, ack);
+	return Send(id, ack);
 }
 
-void ATTDevice::Send(bool value, short id, bool ack)
+bool ATTDevice::Send(bool value, short id, bool ack)
 {
 	_data.Add(value);
-	Send(id, ack);
+	return Send(id, ack);
 }
 
-void ATTDevice::Send(short value, short id, bool ack)
+bool ATTDevice::Send(short value, short id, bool ack)
 {
 	_data.Add(value);
-	Send(id, ack);
+	return Send(id, ack);
 }
 
-void ATTDevice::Send(float value, short id, bool ack)
+bool ATTDevice::Send(float value, short id, bool ack)
 {
 	_data.Add(value);
-	Send(id, ack);
+	return Send(id, ack);
 }
 
 //sends the previously built complex data packet to the cloud for the sensor with the specified
-void ATTDevice::Send(short id, bool ack)
+bool ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
 	short nrRetries = 0;
 	unsigned long curTime = millis();
-	if(_lastTimeSent != 0 && _lastTimeSent + MIN_TIME_BETWEEN_SEND > curTime)
+	if(_lastTimeSent != 0 && _lastTimeSent + _minTimeBetweenSend > curTime)
 	{
 		Serial.println("pausing between 2 consecutive messages...");
-		Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
-		Serial.println(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
-		delay(MIN_TIME_BETWEEN_SEND + _lastTimeSent - curTime);
+		//Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
+		//Serial.println(_minTimeBetweenSend + _lastTimeSent - curTime);
+		delay(_minTimeBetweenSend + _lastTimeSent - curTime);
 	}
-	while(_modem->Send(&_data, ack) == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
+	bool res = _modem->Send(&_data, ack);
+	while(res == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
 	{
 		nrRetries++;
 		delay(2000);
 		Serial.println("resending");
+		res = _modem->Send(&_data, ack);
 	}
 	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 	_lastTimeSent = millis();
+	return res;
 }
 
 //loads a bool data value into the data packet that is being prepared to send to the
