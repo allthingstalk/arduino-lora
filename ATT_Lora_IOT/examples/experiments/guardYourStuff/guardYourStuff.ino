@@ -57,8 +57,8 @@ void setup()
   
   Serial.print("initializing gps");
   while(readCoordinates() == false){
-	delay(1000);
-	Serial.print(".");
+    delay(1000);
+    Serial.print(".");
   }
   Serial.println();
   
@@ -73,7 +73,7 @@ void setup()
 void loop() 
 {
   if(isMoving() == true)
-  {	  
+  {   
       if(wasMoving == false)
       {
           Serial.println("movement detected");
@@ -81,10 +81,10 @@ void loop()
           wasMoving = true;
           Device.Send(true, PUSH_BUTTON);
           prevCoordinatesAt = millis();                                 //when movement begins, we always wait for 'GPS_DATA_EVERY' amount of time before sending the first gps coordinates (unless movement stopped earlier)
-		  SendCoordinates();                                             //send the coordinates over.
+          SendCoordinates();                                             //send the coordinates over.
       }
-	  else
-	      Serial.println("moving");
+      else
+          Serial.println("moving");
       //if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())                //only send every 15 seconds, so we don't swamp the system.
       //{
       //   SendCoordinates();                                             //send the coordinates over.
@@ -97,7 +97,7 @@ void loop()
     //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
     //optional improvement: turn off the gps module
     wasMoving = false;
-	Device.Send(false, PUSH_BUTTON);
+    Device.Send(false, PUSH_BUTTON);
     SendCoordinates(); 
   }
   delay(1000);                                                           //sample the accelerometer quickly -> not so costly.
