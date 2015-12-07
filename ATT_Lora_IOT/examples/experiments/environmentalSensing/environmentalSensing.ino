@@ -13,6 +13,10 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
+ *
+ * EXPLENATION:
+ * We will measure our environment using 6 sensors. Approximately, every 2 minutes, all values 
+ * will be read and sent to the SmartLiving Developer Cloud.
  */
 
 #include <Wire.h>
@@ -44,7 +48,7 @@ short airValue;
 
 void setup() 
 {
-  pinMode(GROVEPWR, OUTPUT);                                    //turn the power on on the secondary row of grove connectors.
+  pinMode(GROVEPWR, OUTPUT);                                    //turn on the power for the secondary row of grove connectors.
   digitalWrite(GROVEPWR, HIGH);
 
   Serial.begin(SERIAL_BAUD);
@@ -54,8 +58,8 @@ void setup()
     Serial.println("retrying...");
     delay(200);
   }
-  Device.SetMaxSendRetry(1);                                    //just try to send data 1 time, if it fails, just go to the next data item.  if receiving the data is more important, use -1, to indicate that data has to be succesfully sent before moving on to the next item
-  Device.SetMinTimeBetweenSend(15000);           //wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly.
+  Device.SetMaxSendRetry(1);                                    //just try to send data 1 time, if it fails, just go to the next data item.  if the data must arrive in the cloud before continuing, use -1, to indicate that data has to be successfully sent before moving on to the next item
+  Device.SetMinTimeBetweenSend(15000);                          //wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly.
   initSensors();
 }
 

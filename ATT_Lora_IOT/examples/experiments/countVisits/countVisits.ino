@@ -13,6 +13,14 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
+ *
+ * EXPLENATION:
+ * Each time the door opens a counter is incremented locally on your LoRa device.
+ * Every 30 seconds, if the count has changed, it will be sent to your SmartLiving account.
+ * As soon as a count of 20 is reached, a notification is sent out to remind you that cleaning is in order.
+ * A pushbutton on the device allows you to reset the count when cleaning is done.
+ * This can also be seen as validation that the cleaning crew has actually visited the facility.
+
  */
 
 #include <Wire.h>
@@ -56,7 +64,7 @@ void tryConnect()
   if(isConnected == true)
   {
      Serial.println("Ready to send data");
-     //todo: improvement: retrieved the count stored on disk so that it is not lost after power down
+     //todo: improvement: retrieved the count stored on disk so that it is not lost after power down, you can use the EEPROM lib for this.
      sendVisitCount();                                  	//always send the value at initial connection, keep the platform in sync with the latest change on the device.
   } 
   else

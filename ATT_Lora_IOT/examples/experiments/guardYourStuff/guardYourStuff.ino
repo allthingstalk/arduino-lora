@@ -13,6 +13,13 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
+ *
+ * EXPLENATION:
+ *
+ * If the accelerometer senses movement, the device will send out GPS coordinates. If we have our lock turned on,
+ * movement will trigger a notification which will be visible in the SmartLiving Developer Cloud and on our Smartphone.
+ * If the lock is turned off, nothing will happen, regardless of any movement of the device.
+ *
  */
 
 
@@ -24,7 +31,7 @@
 #include <MicrochipLoRaModem.h>
 
 #define SERIAL_BAUD 57600
-#define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer)
+#define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer, vibrations)
 #define GPS_DATA_EVERY 15000                            //the amount of time between 2 consecutive GPS updates while moving. 
 
 MicrochipLoRaModem Modem(&Serial1);
@@ -41,7 +48,7 @@ float latitude;
 float altitude;
 float timestamp;
 
-int8_t prevX,prevY,prevZ;                              //keeps track of the accelerometer data that was read last previosly, so we can detect a difference in position.
+int8_t prevX,prevY,prevZ;                               //keeps track of the accelerometer data that was read last previously, so we can detect a difference in position.
 unsigned long prevCoordinatesAt;                        //only send the coordinates every 15 seconds, so we need to keep track of the time.
 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
@@ -85,11 +92,6 @@ void loop()
       }
       else
           Serial.println("moving");
-      //if(prevCoordinatesAt + GPS_DATA_EVERY <= millis())                //only send every 15 seconds, so we don't swamp the system.
-      //{
-      //   SendCoordinates();                                             //send the coordinates over.
-      //   prevCoordinatesAt = millis();
-     // }
   }
   else if(wasMoving == true)
   {
@@ -107,7 +109,6 @@ bool isMoving()
 {
   int8_t x,y,z;
   accelemeter.getXYZ(&x, &y, &z);
-  //Serial.print("x: "); Serial.print(x); Serial.print(", y: "); Serial.print(y); Serial.print(", z: "); Serial.println(z);
   bool result = (abs(prevX - x) + abs(prevY - y) + abs(prevZ - z)) > MOVEMENTTRESHOLD;
   prevX = x;
   prevY = y;
@@ -118,7 +119,7 @@ bool isMoving()
 //sends the GPS coordinates to the cloude
 void SendCoordinates()
 {
-  Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
+  //Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
   while(readCoordinates() == false) delay(300);                 //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
          
   Device.Queue(latitude);
@@ -198,7 +199,7 @@ float ExtractValue(unsigned char& start)
         end++;
     buffer[end] = 0;                                //end the string, so we can create a string object from the sub string -> easy to convert to float.
     float result = 0.0;
-    if(end != start + 1)                    //if we only found a ',', then there is no value.
+    if(end != start + 1)                            //if we only found a ',', then there is no value.
         result = String((const char*)(buffer + start)).toFloat();
     start = end + 1;
     return result;
