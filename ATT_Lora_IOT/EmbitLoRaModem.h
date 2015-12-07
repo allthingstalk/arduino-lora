@@ -9,7 +9,7 @@ Original author: Jan Bogaerts (2015)
 #define EmbitLoRaModem_h
 
 #include "LoRaModem.h"
-#include "LoraPacket.h"
+#include "LoRaPacket.h"
 //#include <stream>
 
 //this class represents the ATT cloud platform.
