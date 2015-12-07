@@ -109,14 +109,14 @@ class ATTDevice
 		//set the minimum amount of time between 2 consecutive messages that are sent to the cloud.
 		//default value: 15 seconds.
 		//minTimeBetweenSend: the nr of milli seconds that should be between 2 data packets.
-		void SetMinTimeBetweenSend(int minTimeBetweenSend) { _minTimeBetweenSend = minTimeBetweenSend; };
+		void SetMinTimeBetweenSend(short minTimeBetweenSend) { _minTimeBetweenSend = minTimeBetweenSend; };
 		
 	private:	
 		//builds the content that has to be sent to the cloud using mqtt (either a csv value or a json string)
 		LoRaPacket _data;
 		LoRaModem* _modem;
 		short _maxRetries;								//the max nr of times that a send function will try to resend a message.
-		int _minTimeBetweenSend;
+		short _minTimeBetweenSend;
 		unsigned long _lastTimeSent;					//the last time that a message was sent, so we can block sending if user calls send to quickly
 		
 };

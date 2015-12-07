@@ -91,6 +91,8 @@ void MMA7660::getXYZ(int8_t *x,int8_t *y,int8_t *z)
             }
         }
         count++;
+		if(count >= 3)
+			break;																		//make certain we don't get stuck in an ethernal loop
     }
     *x = ((char)(val[0]<<2))/4;
     *y = ((char)(val[1]<<2))/4;

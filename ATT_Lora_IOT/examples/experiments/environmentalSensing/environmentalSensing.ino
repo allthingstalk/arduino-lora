@@ -53,6 +53,11 @@ void setup()
 
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());                    //init the baud rate of the serial connection so that it's ok for the modem
+  
+  Serial.println("Environmental Sensing loRa experiment!");
+  Serial.print("Sending data each ");Serial.print(SEND_EVERY);Serial.println(" milliseconds");
+
+  Serial.println("Initializing modem.");
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))            //there is no point to continue if we can't connect to the cloud: this device's main purpose is to send data to the cloud.
   {
     Serial.println("retrying...");
@@ -80,6 +85,7 @@ void initSensors()
     pinMode(LightSensorPin,INPUT);
     tph.begin();
     airqualitysensor.init(AirQualityPin);
+	Serial.println("done.");
 }
 
 void ReadSensors()
@@ -119,23 +125,28 @@ void SendSensors()
 void DisplaySensors()
 {
     Serial.print("sound level: ");
-    Serial.println(soundValue);
+    Serial.print(soundValue);
+	  Serial.println(" Analog (0-1023)");
       
     Serial.print("light intensity: ");
-    Serial.println(lightValue);
+    Serial.print(lightValue);
+	  Serial.println(" Lux");
       
     Serial.print("temp: ");
     Serial.print(temp);
+	  Serial.println(" °C");
       
-    Serial.print(", humidity: ");
+    Serial.print("humidity: ");
     Serial.print(hum);
+	  Serial.println(" %");
       
-    Serial.print(", pressure: ");
+    Serial.print("pressure: ");
     Serial.print(pres);
-    Serial.println();
+	  Serial.println(" Pa");
   
     Serial.print("air quality: ");
-    Serial.println(airValue);
+    Serial.print(airValue);
+	  Serial.println(" Analog (0-1023)");
 }
 
 

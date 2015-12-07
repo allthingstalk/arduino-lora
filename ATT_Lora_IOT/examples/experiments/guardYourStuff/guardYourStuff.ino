@@ -31,8 +31,9 @@
 #include <MicrochipLoRaModem.h>
 
 #define SERIAL_BAUD 57600
-#define MOVEMENTTRESHOLD 20                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer, vibrations)
+#define MOVEMENTTRESHOLD 12                             //amount of movement that can be detected before being considered as really moving (jitter on the accelerometer, vibrations)
 #define GPS_DATA_EVERY 15000                            //the amount of time between 2 consecutive GPS updates while moving. 
+long gpsLastSentAt = 0;                                 //keeps track of the last time that we sent over GPS coordinates
 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
@@ -49,7 +50,6 @@ float altitude;
 float timestamp;
 
 int8_t prevX,prevY,prevZ;                               //keeps track of the accelerometer data that was read last previously, so we can detect a difference in position.
-unsigned long prevCoordinatesAt;                        //only send the coordinates every 15 seconds, so we need to keep track of the time.
 
 //accelerometer data is translated to 'moving vs not moving' on the device (fog computing).
 //This value is sent to the cloud using a 'push-button' container. 
@@ -68,13 +68,17 @@ void setup()
     Serial.print(".");
   }
   Serial.println();
-  
+  Serial.println("Initializing LoRA modem.");
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
   {
     Serial.println("retrying...");
     delay(200);
   }
   accelemeter.getXYZ(&prevX, &prevY, &prevZ);                           //get the current state of the accelerometer, so we can use this info in the loop as something to compare against.
+  Serial.println("Sending initial state.");
+  Device.SetMaxSendRetry(2);
+  Device.Send(false, BINARY_SENSOR);
+  Serial.println("ready to guard your stuff.");
 }
 
 void loop() 
@@ -86,12 +90,13 @@ void loop()
           Serial.println("movement detected");
           //optional improvement: only turn on the gps when it is used: while the device is moving.
           wasMoving = true;
-          Device.Send(true, PUSH_BUTTON);
-          prevCoordinatesAt = millis();                                 //when movement begins, we always wait for 'GPS_DATA_EVERY' amount of time before sending the first gps coordinates (unless movement stopped earlier)
-          SendCoordinates();                                             //send the coordinates over.
+          Device.Send(true, BINARY_SENSOR);
+          gpsLastSentAt =  millis();                                    //block the 1st transmission of gps data for a short period, so we don't get timeouts from the lib/basestation.
       }
-      else
-          Serial.println("moving");
+      if(gpsLastSentAt + GPS_DATA_EVERY < millis()){
+        SendCoordinates();                                             //send the coordinates over.
+        gpsLastSentAt = millis();
+      }
   }
   else if(wasMoving == true)
   {
@@ -99,10 +104,10 @@ void loop()
     //we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
     //optional improvement: turn off the gps module
     wasMoving = false;
-    Device.Send(false, PUSH_BUTTON);
-    SendCoordinates(); 
+    Device.Send(false, BINARY_SENSOR);
+    SendCoordinates();                                                  //send over last known coordinates
   }
-  delay(1000);                                                           //sample the accelerometer quickly -> not so costly.
+  delay(500);                                                           //sample the accelerometer quickly -> not so costly.
 }
 
 bool isMoving()
@@ -110,31 +115,20 @@ bool isMoving()
   int8_t x,y,z;
   accelemeter.getXYZ(&x, &y, &z);
   bool result = (abs(prevX - x) + abs(prevY - y) + abs(prevZ - z)) > MOVEMENTTRESHOLD;
-  prevX = x;
-  prevY = y;
-  prevZ = z;
-  return result;
-}
 
-//sends the GPS coordinates to the cloude
-void SendCoordinates()
-{
-  //Serial.print("prev time: "); Serial.print(prevCoordinatesAt); Serial.print("cur time: "); Serial.println(millis());
-  while(readCoordinates() == false) delay(300);                 //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
-         
-  Device.Queue(latitude);
-  Device.Queue(longitude);
-  Device.Queue(altitude);
-  Device.Queue(timestamp);
-  Device.Send(GPS);
-  Serial.print("lng: ");
-  Serial.print(longitude, 4);
-  Serial.print(", lat: ");
-  Serial.print(latitude, 4);
-  Serial.print(", alt: ");
-  Serial.print(altitude);
-  Serial.print(", time: ");
-  Serial.println(timestamp);
+  if(result == false && wasMoving == true){                       //when movment stops, we check 2 times, cause often, the accelerometer reports for a single tick that movement has stopped, but it hasn't, the distance between the 2 measurement points was just too close, so remeasure, make certain that movement has really stopped
+    delay(800);
+    accelemeter.getXYZ(&x, &y, &z);
+    result = (abs(prevX - x) + abs(prevY - y) + abs(prevZ - z)) > MOVEMENTTRESHOLD;
+  }
+  
+  if(result == true){
+    prevX = x;
+    prevY = y;
+    prevZ = z;
+  }
+
+  return result; 
 }
 
 //tries to read the gps coordinates from the text stream that was received from the gps module.
@@ -154,6 +148,32 @@ bool readCoordinates()
     }
     return foundGPGGA;
 }
+
+//sends the GPS coordinates to the cloude
+void SendCoordinates()
+{
+  Serial.print("retrieving GPS coordinates for transmission, please hold on");
+  while(readCoordinates() == false){                          //try to read some coordinates until we have a valid set. Every time we fail, pause a little to give the GPS some time. There is no point to continue without reading gps coordinates. The bike was potentially stolen, so the lcoation needs to be reported before switching back to none moving.
+      Serial.print(".");
+      delay(1000);                 
+  }
+  Serial.println();
+         
+  Device.Queue(latitude);
+  Device.Queue(longitude);
+  Device.Queue(altitude);
+  Device.Queue(timestamp);
+  Device.Send(GPS);
+  Serial.print("lng: ");
+  Serial.print(longitude, 4);
+  Serial.print(", lat: ");
+  Serial.print(latitude, 4);
+  Serial.print(", alt: ");
+  Serial.print(altitude);
+  Serial.print(", time: ");
+  Serial.println(timestamp);
+}
+
 
 //extraxts all the coordinates from the stream that was received from the module 
 //and stores the values in the globals defined at the top of the sketch.

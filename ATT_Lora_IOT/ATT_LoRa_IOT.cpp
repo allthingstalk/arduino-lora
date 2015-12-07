@@ -68,7 +68,8 @@ bool ATTDevice::Send(short id, bool ack)
 	unsigned long curTime = millis();
 	if(_lastTimeSent != 0 && _lastTimeSent + _minTimeBetweenSend > curTime)
 	{
-		Serial.println("pausing between 2 consecutive messages...");
+		Serial.print("not enough time between 2 consecutive messages, delaying next message for ");
+		Serial.print((_minTimeBetweenSend + _lastTimeSent - curTime)/1000); Serial.println(" seconds");
 		//Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
 		//Serial.println(_minTimeBetweenSend + _lastTimeSent - curTime);
 		delay(_minTimeBetweenSend + _lastTimeSent - curTime);
@@ -77,7 +78,8 @@ bool ATTDevice::Send(short id, bool ack)
 	while(res == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
 	{
 		nrRetries++;
-		delay(2000);
+		Serial.print("retry in "); Serial.print(_minTimeBetweenSend/1000); Serial.println(" seconds");
+		delay(_minTimeBetweenSend);
 		Serial.println("resending");
 		res = _modem->Send(&_data, ack);
 	}
