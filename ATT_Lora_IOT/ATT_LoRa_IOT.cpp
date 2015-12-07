@@ -68,7 +68,7 @@ bool ATTDevice::Send(short id, bool ack)
 	unsigned long curTime = millis();
 	if(_lastTimeSent != 0 && _lastTimeSent + _minTimeBetweenSend > curTime)
 	{
-		Serial.print("not enough time between 2 consecutive messages, delaying next message for ");
+		Serial.print("adhering to LoRa bandwith usage, delaying next message for ");
 		Serial.print((_minTimeBetweenSend + _lastTimeSent - curTime)/1000); Serial.println(" seconds");
 		//Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
 		//Serial.println(_minTimeBetweenSend + _lastTimeSent - curTime);
