@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,7 +13,8 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
- */
+ *  
+ **/
 
 #include <Wire.h>
 #include <ATT_LoRa_IOT.h>
@@ -28,13 +29,11 @@
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
-
-
 void setup() 
 {
   pinMode(AnalogSensor,INPUT);
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
@@ -47,11 +46,11 @@ void loop()
   float Rsensor= sensorValue * 3.3 / 1023;
   Rsensor = pow(10, Rsensor);
   Serial.println(Rsensor);
-  if((int)value != Rsensor){			//we round it off, so we don't send to many value changes
+  if((int)value != Rsensor){			// we round the value so we don't send too many value changes
     value = Rsensor;
     SendValue();
   }
-  delay(300);
+  delay(3000);
 }
 
 void SendValue()
@@ -64,7 +63,7 @@ void SendValue()
 
 void serialEvent1()
 {
-  Device.Process();														//for future extensions -> actuators
+  Device.Process();														// for future use of actuators
 }
 
 

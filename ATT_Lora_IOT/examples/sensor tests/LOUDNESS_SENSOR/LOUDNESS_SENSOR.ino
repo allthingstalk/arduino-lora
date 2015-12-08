@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,7 +13,8 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
- */
+ *  
+ **/
 
 #include <Wire.h>
 #include <ATT_LoRa_IOT.h>
@@ -33,35 +34,34 @@ ATTDevice Device(&Modem);
 
 void setup() 
 {
-  pinMode(AnalogSensor, INPUT);					            // initialize the digital pin as an input.          
+  pinMode(AnalogSensor, INPUT);                     // initialize the digital pin as an input.          
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());        // init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
 
-float value = 1.1;
-
+short val;
 void loop() 
 {  
   analogRead(AnalogSensor);
   delay(10);
-  unsigned int val = analogRead(AnalogSensor);
-  Serial.println(val);
-  //SendValue();
-  delay(200);
+  val = analogRead(AnalogSensor);
+  SendValue();
+  delay(2000);
 }
 
 void SendValue()
 {
-  Serial.println(value);
-  Device.Send(value, LOUDNESS_SENSOR);
+  Serial.print("Value: ");
+  Serial.println(val);
+  Device.Send(val, LOUDNESS_SENSOR);
 }
 
 
 void serialEvent1()
 {
-  Device.Process();														//for future extensions -> actuators
+  Device.Process();                                  // for future use of actuators
 }
 
 

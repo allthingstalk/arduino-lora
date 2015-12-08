@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,7 +13,8 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
- */
+ *  
+ **/
 
 #include <Wire.h>
 #include <MMA7660.h>
@@ -24,17 +25,15 @@
 #define SERIAL_BAUD 57600
 
 
-MMA7660 accelemeter;
+MMA7660 accelemeter;                                  // connect to the I2C port (SCL/SDA)
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
-
-
 
 void setup() 
 {
   accelemeter.init();
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
@@ -45,24 +44,28 @@ int8_t x,y,z;
 void loop() 
 {
   accelemeter.getXYZ(&x, &y, &z);
-  Serial.print("values of X , Y , Z: ");
-  Serial.print(x);
-  Serial.print(" , ");
-  Serial.print(y);
-  Serial.print(" , ");
+  Serial.println("Values");
+  Serial.print("  x: ");
+  Serial.println(x);
+  Serial.print("  y: ");
+  Serial.println(y);
+  Serial.print("  z: ");
   Serial.println(z);
   
   accelemeter.getAcceleration(&accx, &accy, &accz);
-  Serial.println("accleration of X/Y/Z: ");
-  Serial.print("x: ");
+  Serial.println("Accleration");
+  Serial.print("  x: ");
 	Serial.print(accx);
-  Serial.print(" g, y:");
+  Serial.println(" g");
+  Serial.print("  y: ");
 	Serial.print(accy);
-	Serial.print(" g, z:");
+	Serial.println(" g");
+	Serial.print("  z: ");
 	Serial.print(accz);
 	Serial.println(" g");
-	Serial.println("*************");
-  //SendValue();
+	Serial.println();
+
+  SendValue();
   
   delay(1000);
 }
@@ -78,7 +81,7 @@ void SendValue()
 
 void serialEvent1()
 {
-  Device.Process();														//for future extensions -> actuators
+  Device.Process();														// for future use of actuators
 }
 
 

@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,7 +13,8 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
- */
+ *  
+ **/
 
 #include <Wire.h>
 #include <Sodaq_TPH.h>
@@ -29,12 +30,11 @@ MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 
-
 void setup() 
 {
-  tph.begin();
+  tph.begin();                                        // connect TPH sensor to the I2C pin (SCL/SDA)
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");  
 }
@@ -45,24 +45,27 @@ void loop()
   float bmp_temp = tph.readTemperatureBMP();
   float sht_temp = tph.readTemperatureSHT();
   float hum = tph.readHumidity();
-  float pres = tph.readPressure();
+  float pres = tph.readPressure()/100.0;
   
-  Serial.print("temp: ");
+  Serial.print("Temperature: ");
   Serial.print(temp);
+  Serial.println(" °C");
   
-  
-  Serial.print(", temp_BMP: ");
+  Serial.print("Temperature (BMP sensor): ");
   Serial.print(bmp_temp);
+  Serial.println(" °C");
   
-  Serial.print(", temp_sht: ");
+  Serial.print("Temperature (SHT sensor): ");
   Serial.print(sht_temp);
+  Serial.println(" °C");
   
-  Serial.print(", humidity: ");
+  Serial.print("Humidity: ");
   Serial.print(hum);
+  Serial.println(" %");
   
-  
-  Serial.print(", pressure: ");
+  Serial.print("Pressure: ");
   Serial.print(pres);
+  Serial.println(" hPa");
   Serial.println();
 
   Device.Send(temp, TEMPERATURE_SENSOR);
@@ -75,7 +78,7 @@ void loop()
 
 void serialEvent1()
 {
-  Device.Process();														//for future extensions -> actuators
+  Device.Process();														// for future use of actuators
 }
 
 

@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,6 +13,7 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
+ **  
  */
 
 #include <Wire.h>
@@ -23,16 +24,16 @@
 #define SERIAL_BAUD 57600
 
 
-int DigitalSensor = 20;                                        // Digital Sensor is connected to pin D8 on grove shield 
+int DigitalSensor = 20;                                        // digital sensor is connected to pin D20/21 
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 
 
 void setup() 
 {
-  pinMode(DigitalSensor, INPUT);					            // initialize the digital pin as an input.          
+  pinMode(DigitalSensor, INPUT);                      // initialize the digital pin as an input.          
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());          // init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
@@ -41,15 +42,15 @@ bool sensorVal = true;
 
 void loop() 
 {
-  bool sensorRead = digitalRead(DigitalSensor);			        // read status Digital Sensor
-  if (sensorVal != sensorRead) 				                // verify if value has changed
+  bool sensorRead = digitalRead(DigitalSensor);		     // read status of digital sensor
+  if (sensorVal != sensorRead) 				                 // verify if value has changed
   {
      sensorVal = sensorRead;
 	   SendValue(sensorRead);
 	   if(sensorVal == true)
-		   Serial.println("movement = true");
+       Serial.println("Movement = true");
 	   else
-		    Serial.println("movement = false");
+       Serial.println("Movement = false");
   }
   delay(100);
 }
@@ -63,7 +64,6 @@ void SendValue(bool val)
 
 void serialEvent1()
 {
-  Device.Process();														//for future extensions -> actuators
+  Device.Process();                                    // for future use of actuators
 }
-
 
