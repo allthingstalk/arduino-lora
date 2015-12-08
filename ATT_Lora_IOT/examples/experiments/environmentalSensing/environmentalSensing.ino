@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -14,10 +14,12 @@
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
  *
- * EXPLENATION:
+ * Explanation:
+ * 
  * We will measure our environment using 6 sensors. Approximately, every 2 minutes, all values 
  * will be read and sent to the SmartLiving Developer Cloud.
- */
+ * 
+ **/
 
 #include <Wire.h>
 #include <Sodaq_TPH.h>
@@ -48,103 +50,104 @@ short airValue;
 
 void setup() 
 {
-  pinMode(GROVEPWR, OUTPUT);                                    //turn on the power for the secondary row of grove connectors.
+  pinMode(GROVEPWR, OUTPUT);                                    // turn on the power for the secondary row of grove connectors.
   digitalWrite(GROVEPWR, HIGH);
 
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());                    //init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());                    // init the baud rate of the serial connection so that it's ok for the modem
   
-  Serial.println("Environmental Sensing loRa experiment!");
+  Serial.println("-- Environmental Sensing LoRa experiment --");
   Serial.print("Sending data each ");Serial.print(SEND_EVERY);Serial.println(" milliseconds");
 
-  Serial.println("Initializing modem.");
-  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))            //there is no point to continue if we can't connect to the cloud: this device's main purpose is to send data to the cloud.
+  Serial.println("Initializing modem");
+  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))            // there is no point to continue if we can't connect to the cloud: this device's main purpose is to send data to the cloud.
   {
-    Serial.println("retrying...");
+    Serial.println("Retrying...");
     delay(200);
   }
-  Device.SetMaxSendRetry(1);                                    //just try to send data 1 time, if it fails, just go to the next data item.  if the data must arrive in the cloud before continuing, use -1, to indicate that data has to be successfully sent before moving on to the next item
-  Device.SetMinTimeBetweenSend(15000);                          //wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly.
+  Device.SetMaxSendRetry(1);                                    // just try to send data 1 time, if it fails, just go to the next data item.  if the data must arrive in the cloud before continuing, use -1, to indicate that data has to be successfully sent before moving on to the next item
+  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly.
   initSensors();
 }
 
 void loop() 
 {
   ReadSensors();
-  DisplaySensors();
-  SendSensors();
-  Serial.print("delay for: ");
+  DisplaySensorValues();
+  SendSensorValues();
+  Serial.print("Delay for: ");
   Serial.println(SEND_EVERY);
+  Serial.println();
   delay(SEND_EVERY);
 }
 
 void initSensors()
 {
-    Serial.println("initializing sensors, this can take a few seconds...");
+    Serial.println("Initializing sensors, this can take a few seconds...");
     pinMode(SoundSensorPin,INPUT);
     pinMode(LightSensorPin,INPUT);
     tph.begin();
     airqualitysensor.init(AirQualityPin);
-	Serial.println("done.");
+    Serial.println("Done");
 }
 
 void ReadSensors()
 {
-    Serial.println("Start sampling sensors. ");
-    Serial.println("----------------------- ");
+    Serial.println("Start reading sensors");
+    Serial.println("---------------------");
     soundValue = analogRead(SoundSensorPin);
     lightValue = analogRead(LightSensorPin);
-    lightValue = lightValue * 3.3 / 1023;                           //convert to lux, this is based on the voltage that the sensor receives
+    lightValue = lightValue * 3.3 / 1023;         // convert to lux, this is based on the voltage that the sensor receives
     lightValue = pow(10, lightValue);
     
     temp = tph.readTemperature();
     hum = tph.readHumidity();
-    pres = tph.readPressure();
+    pres = tph.readPressure()/100.0;
     
     airValue = airqualitysensor.getRawData();
 }
 
-void SendSensors()
+void SendSensorValues()
 {
-    Serial.println("Start uploading data to the ATT cloud Platform. ");
-  Serial.println("-----------------------------------------------");
-    Serial.println("sending sound value... ");
+    Serial.println("Start uploading data to the ATT cloud Platform");
+    Serial.println("----------------------------------------------");
+    Serial.println("Sending sound value... ");
     Device.Send(soundValue, LOUDNESS_SENSOR);
-    Serial.println("sending light value... "); 
+    Serial.println("Sending light value... "); 
     Device.Send(lightValue, LIGHT_SENSOR);
-    Serial.println("sending temperature value... ");
+    Serial.println("Sending temperature value... ");
     Device.Send(temp, TEMPERATURE_SENSOR);
-    Serial.println("sending humidity value... ");  
+    Serial.println("Sending humidity value... ");  
     Device.Send(hum, HUMIDITY_SENSOR);
-    Serial.println("sending pressure value... ");  
+    Serial.println("Sending pressure value... ");  
     Device.Send(pres, PRESSURE_SENSOR);
-    Serial.println("sending air quality value... ");  
+    Serial.println("Sending air quality value... ");  
     Device.Send(airValue, AIR_QUALITY_SENSOR);
 }
 
-void DisplaySensors()
+void DisplaySensorValues()
 {
-    Serial.print("sound level: ");
+    Serial.print("Sound level: ");
     Serial.print(soundValue);
 	  Serial.println(" Analog (0-1023)");
       
-    Serial.print("light intensity: ");
+    Serial.print("Light intensity: ");
     Serial.print(lightValue);
 	  Serial.println(" Lux");
       
-    Serial.print("temp: ");
+    Serial.print("Temperature: ");
     Serial.print(temp);
 	  Serial.println(" °C");
       
-    Serial.print("humidity: ");
+    Serial.print("Humidity: ");
     Serial.print(hum);
 	  Serial.println(" %");
       
-    Serial.print("pressure: ");
+    Serial.print("Pressure: ");
     Serial.print(pres);
-	  Serial.println(" Pa");
+	  Serial.println(" hPa");
   
-    Serial.print("air quality: ");
+    Serial.print("Air quality: ");
     Serial.print(airValue);
 	  Serial.println(" Analog (0-1023)");
 }
@@ -152,7 +155,7 @@ void DisplaySensors()
 
 void serialEvent1()
 {
-    Device.Process();                                                     //for future extensions -> actuators
+    Device.Process();                           //for future use of actuators
 }
 
 
