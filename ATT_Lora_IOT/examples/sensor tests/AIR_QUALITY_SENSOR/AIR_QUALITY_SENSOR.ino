@@ -1,6 +1,6 @@
 /****
  *  AllThingsTalk Developer Cloud IoT experiment for LoRa
- *  version 1.0 dd 09/11/2015
+ *  Version 1.0 dd 09/11/2015
  *  Original author: Jan Bogaerts 2015
  *
  *  This sketch is part of the AllThingsTalk LoRa rapid development kit
@@ -13,7 +13,16 @@
  *  
  *  For more information, please check our documentation
  *  -> http://docs.smartliving.io/kits/lora
- */
+ *  
+ **/
+
+ /**** 
+  *  values ranges
+  *  
+  * 0-300 is good air quality
+  * 300-700 is polluted
+  * above 700 is highly polluted
+  **/
 
 #include <Wire.h>
 #include "AirQuality2.h"
@@ -30,18 +39,16 @@
 MicrochipLoRaModem Modem(&Serial1);
 ATTDevice Device(&Modem);
 AirQuality2 airqualitysensor;
-int value = -1;
+short value;
 
 void setup() 
 {
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   airqualitysensor.init(AnalogSensor);
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
-
-//short value;
 
 void loop() 
 {
@@ -52,15 +59,17 @@ void loop()
 
 void SendValue()
 {
-  Serial.print("sending: ");
-  Serial.println(value);
-  //Device.Send(value, AIR_QUALITY_SENSOR);
+  Serial.print("Air quality: ");
+  Serial.print(value);
+  Serial.println("   Analog (0-1023)");
+  Serial.print("Sending");
+  Device.Send(value, AIR_QUALITY_SENSOR);
 }
 
 
 void serialEvent1()
 {
-//  Device.Process();														//for future extensions -> actuators
+  Device.Process();														// for future use of actuators
 }
 
 
