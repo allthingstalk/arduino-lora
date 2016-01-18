@@ -59,24 +59,32 @@ class ATTDevice
 		//void AddAsset(short id, String name, String description, bool isActuator, String type);
 		
 		//send a bool data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknolodge, otherwise no acknowledge is waited for.
 		bool Send(bool value, short id, bool ack = true);
 		
 		//send an integer value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(short value, short id, bool ack = true);
 		
 		//send a string data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(String value, short id, bool ack = true);
 		
 		//send a gloat data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(float value, short id, bool ack = true);
 		
 		//sends the previously built complex data packet to the cloud for the sensor with the specified
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(short id, bool ack = true);
+		
+		//sends the previously built Lora packet to the cloud. This can be a regulat packet, instrumentation packet,...
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
+		bool Send(LoRaPacket* data, bool ack = true);
+		
+		//collects all the instrumentation data from the modem (RSSI, ADR, datarate,..) and sends it over
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
+		bool SendInstrumentation(bool ack = true);
 		
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.

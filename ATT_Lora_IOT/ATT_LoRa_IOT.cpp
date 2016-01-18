@@ -60,10 +60,32 @@ bool ATTDevice::Send(float value, short id, bool ack)
 	return Send(id, ack);
 }
 
+//collects all the instrumentation data from the modem (RSSI, ADR, datarate,..) and sends it over
+//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
+bool ATTDevice::SendInstrumentation(bool ack = true)
+{
+	InstrumentationPacket data;
+	data.SetParam(DATA_RATE, _modem->GetParam(DATA_RATE));
+	data.SetParam(FREQUENCYBAND, _modem->GetParam(FREQUENCYBAND));
+	data.SetParam(CHANNEL, _modem->GetParam(CHANNEL));
+	data.SetParam(POWER_INDEX, _modem->GetParam(POWER_INDEX));
+	data.SetParam(ADR, _modem->GetParam(ADR));
+	data.SetParam(DUTY_CYCLE, _modem->GetParam(DUTY_CYCLE));
+	data.SetParam(GATEWAY_COUNT, _modem->GetParam(GATEWAY_COUNT));
+	data.SetParam(SNR, _modem->GetParam(SNR));
+	data.SetParam(SP_FACTOR, _modem->GetParam(SP_FACTOR));
+	return Send(&data, ack);
+}
+
 //sends the previously built complex data packet to the cloud for the sensor with the specified
 bool ATTDevice::Send(short id, bool ack)
 {
 	_data.SetId(id);
+	return Send(&_data, ack);
+}
+
+bool ATTDevice::Send(LoRaPacket* data, bool ack)
+{
 	short nrRetries = 0;
 	unsigned long curTime = millis();
 	if(_lastTimeSent != 0 && _lastTimeSent + _minTimeBetweenSend > curTime)
@@ -74,16 +96,16 @@ bool ATTDevice::Send(short id, bool ack)
 		//Serial.println(_minTimeBetweenSend + _lastTimeSent - curTime);
 		delay(_minTimeBetweenSend + _lastTimeSent - curTime);
 	}
-	bool res = _modem->Send(&_data, ack);
+	bool res = _modem->Send(&data, ack);
 	while(res == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
 	{
 		nrRetries++;
 		Serial.print("retry in "); Serial.print(_minTimeBetweenSend/1000); Serial.println(" seconds");
 		delay(_minTimeBetweenSend);
 		Serial.println("resending");
-		res = _modem->Send(&_data, ack);
+		res = _modem->Send(&data, ack);
 	}
-	_data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
+	data.Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 	_lastTimeSent = millis();
 	return res;
 }
