@@ -8,9 +8,9 @@ Original author: Jan Bogaerts (2015)
 #ifndef EmbitLoRaModem_h
 #define EmbitLoRaModem_h
 
-#include "LoRaModem.h"
-#include "LoRaPacket.h"
-//#include <stream>
+#include <LoRaModem.h>
+#include <LoRaPacket.h>
+#include <instrumentationParamEnum.h>
 
 #define DEFAULT_PAYLOAD_SIZE 52
 #define PORT 1
@@ -56,7 +56,11 @@ class MicrochipLoRaModem: public LoRaModem
 		//send a data packet to the server
 		bool Send(LoRaPacket* packet, bool ack = true);
 		//process any incoming packets from the modem
-		 void ProcessIncoming();
+		void ProcessIncoming();
+		//extract the specified instrumentation parameter from the modem and return the value
+		int GetParam(instrumentationParam param);
+		//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
+		int GetModemId();
 	private:
 		Stream* _stream;					//the stream to communicate with the lora modem.
 		char inputBuffer[DEFAULT_INPUT_BUFFER_SIZE + 1];
@@ -73,6 +77,12 @@ class MicrochipLoRaModem: public LoRaModem
 		bool setMacParam(const char* paramName, unsigned char paramValue);
 		bool setMacParam(const char* paramName, const char* paramValue);
 		unsigned char macTransmit(const char* type, const unsigned char* payload, unsigned char size);
+		//convert the text value for spreading factor into a number between 0 and 6
+		int sfToIndex(char* value);
+		//retrieves the specified parameter from the radio
+		char* getRadioParam(const char* paramName, unsigned short timeout = DEFAULT_TIMEOUT);
+		//retrieves the specified parameter from the radio
+		char* getMacParam(const char* paramName, unsigned short timeout = DEFAULT_TIMEOUT);
 };
 
 #endif

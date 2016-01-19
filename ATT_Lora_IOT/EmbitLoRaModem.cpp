@@ -3,6 +3,7 @@
 */
 
 #include "EmbitLoRaModem.h"
+#include <arduino.h>
 
 #define PORT 0x01
 #define SERIAL_BAUD 9600
@@ -229,4 +230,14 @@ void EmbitLoRaModem::printHex(unsigned char hex)
   Serial.print(hexTable[hex /16]);
   Serial.print(hexTable[hex % 16]);
   Serial.print(' ');
+}
+//extract the specified instrumentation parameter from the modem and return the value
+int EmbitLoRaModem::GetParam(instrumentationParam param)
+{
+	Serial.println("to be implemented: GetParam for embit modems");
+}
+//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
+int EmbitLoRaModem::GetModemId()
+{
+	return 2;
 }

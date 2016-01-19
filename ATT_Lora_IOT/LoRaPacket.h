@@ -27,10 +27,10 @@ class LoRaPacket
 		
 		
 		//resets the content of the packet back to 0 ->> all data will be removed
-		virtual void Reset() = {};
+		virtual void Reset() = 0;
 	protected:
 		//returns the frame type number for this lora packet. The default value is 0x40. Inheritors that render other packet types can overwrite this.
-		unsigned char getFrameType();
+		virtual unsigned char getFrameType();
 		//calculate the checksum of the packet and return it.
 		unsigned char calculateCheckSum(unsigned char* toSend, short len);
 	private:	

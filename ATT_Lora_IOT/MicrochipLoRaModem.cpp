@@ -5,6 +5,7 @@
 #include "MicrochipLoRaModem.h"
 #include "StringLiterals.h"
 #include "Utils.h"
+#include <Arduino.h>
 
 #define PORT 0x01
 
@@ -160,8 +161,7 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 		if (readLn() > 0)
 		{
 			#ifdef FULLDEBUG		
-			Serial.print(".");
-			Serial.print("(");
+			Serial.print(".(");
 			Serial.print(this->inputBuffer);
 			Serial.print(")");
 			#endif
@@ -249,7 +249,7 @@ bool MicrochipLoRaModem::expectString(const char* str, unsigned short timeout)
 	unsigned long start = millis();
 	while (millis() < start + timeout)
 	{
-	#ifdef FULLDEBUG	
+		#ifdef FULLDEBUG	
 		Serial.print(".");
 		#endif
 
@@ -397,7 +397,7 @@ unsigned char MicrochipLoRaModem::onMacRX()
 
 	// sanity check
 	if (strcmp(token, STR_RESULT_MAC_RX) != 0){
-	Serial.println("no mac_rx found in result");
+		Serial.println("no mac_rx found in result");
 		return NoResponse; // TODO create more appropriate error codes
 	}
 
@@ -409,4 +409,125 @@ unsigned char MicrochipLoRaModem::onMacRX()
 	memcpy(this->receivedPayloadBuffer, token, strlen(token) + 1); // TODO check for buffer limit
 
 	return NoError;
+}
+
+//extract the specified instrumentation parameter from the modem and return the value
+int MicrochipLoRaModem::GetParam(instrumentationParam param)
+{
+	switch(param){
+		case MODEM: return 0;
+		case FREQUENCYBAND:{
+			if (strstr(getMacParam("band"), "868")) return 1;
+			return 0;}
+		case SP_FACTOR:{
+			char* val = getRadioParam("sf");
+			return sfToIndex(val);}
+		case ADR:{
+			if (strstr(getMacParam("adr"), "on")) return 1;
+			return 0;}
+		case POWER_INDEX:{
+			char* val = getMacParam("pwridx");
+			return atoi(val);}
+		case BANDWIDTH:{
+			char* val = getRadioParam("bw");
+			if (strstr(val, "500")) return 3;
+			if (strstr(val, "250")) return 2;
+			if (strstr(val, "125")) return 1;
+			return 0;}
+		case CODING_RATE:{
+			char* val = getRadioParam("cr");
+			if (strstr(val, "4/8")) return 3;
+			if (strstr(val, "4/7")) return 2;
+			if (strstr(val, "4/6")) return 1;
+			return 0;}
+		case DUTY_CYCLE:{
+			char* val = getMacParam("dcycleps");
+			return atoi(val);}
+		case SNR:{
+			char* val = getRadioParam("snr");
+			return atoi(val);}
+		case GATEWAY_COUNT:{
+			char* val = getMacParam("gwnb");
+			return atoi(val);}
+		case RETRANSMISSION_COUNT:{
+			char* val = getMacParam("retx");
+			return atoi(val);}
+		case DATA_RATE:{
+			char* val = getMacParam("dr");
+			return atoi(val);}
+		default: return false;
+	}
+}
+
+char* MicrochipLoRaModem::getMacParam(const char* paramName, unsigned short timeout)
+{
+	#ifdef FULLDEBUG	
+	Serial.print("[getMacParam] ");
+	Serial.print(paramName);
+	#endif
+
+	_stream->print(STR_CMD_GET_MAC);
+	_stream->print(paramName);	
+	_stream->print(CRLF);
+	
+	unsigned long start = millis();
+	while (millis() < start + timeout)
+	{
+		if (readLn() > 0)
+		{
+			#ifdef FULLDEBUG
+			Serial.print(" = ");
+			Serial.println(this->inputBuffer);
+			#endif
+			return this->inputBuffer;
+		}
+	}
+	return NULL;						//no repsonse, so return empty string
+}
+
+char* MicrochipLoRaModem::getRadioParam(const char* paramName, unsigned short timeout)
+{
+	#ifdef FULLDEBUG	
+	Serial.print("[getRadioParam] ");
+	Serial.print(paramName);
+	#endif
+
+	_stream->print(STR_CMD_GET_RADIO);
+	_stream->print(paramName);	
+	_stream->print(CRLF);
+	
+	unsigned long start = millis();
+	while (millis() < start + timeout)
+	{
+		if (readLn() > 0)
+		{
+			#ifdef FULLDEBUG
+			Serial.print(" = ");
+			Serial.println(this->inputBuffer);
+			#endif
+			return this->inputBuffer;
+		}
+	}
+	return NULL;						//no repsonse, so return empty string
+}
+
+//convert the text value for spreading factor into a number between 0 and 6
+int MicrochipLoRaModem::sfToIndex(char* value)
+{
+	int len = strlen(value);
+	if(len == 3){
+		int res = value[2] - 54;     			//48 = ascii 0,  ascii 55 = 7 -> transaltes to index 0x01
+		if (res >= 1 && res < 3) return res;	//small sanity check, make certain that it is within the expected range
+	}
+	else if(len == 4){
+		int res = value[3] - 47 + 3;
+		if (res >= 4 && res < 7) return res;	//small sanity check, make certain that it is within the expected range
+	}
+	return 0;   //unknown spreading factor
+}
+
+//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
+int MicrochipLoRaModem::GetModemId()
+{
+	return 3;
 }

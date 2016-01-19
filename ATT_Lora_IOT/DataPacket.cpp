@@ -53,11 +53,6 @@ unsigned char DataPacket::Write(unsigned char* result)
 	return curPos;
 }
 
-//assigns the asset/container id to the packet
-void DataPacket::SetId(unsigned char id)
-{
-	contId = id;
-}
 
 
 bool DataPacket::Add(bool value)

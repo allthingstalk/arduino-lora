@@ -5,11 +5,12 @@ Released into the public domain.
 Original author: Jan Bogaerts (2015-2016)
 */
 
-#ifndef LoRaPacket_h
-#define LoRaPacket_h
+#ifndef DataPacket_h
+#define DataPacket_h
 
 #include <string.h>
 #include <Stream.h>
+#include <LoRaPacket.h>
 
 //this class represents the ATT cloud platform.
 class DataPacket: public LoRaPacket
