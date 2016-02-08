@@ -87,7 +87,47 @@ void ATTDevice::SetInstrumentationParam(InstrumentationPacket* data, instrumenta
 	data->SetParam(param, value);
 	Serial.print(name);
 	Serial.print(": ");
-	Serial.println(value);
+	switch(param){
+		case MODEM:
+			if(value == 0) Serial.println("unknown");
+			else if(value == 1) Serial.println("multitech mdot");
+			else if(value == 2) Serial.println("embit-EMB-LR1272(E)");
+			else if(value == 3) Serial.println("microchip RN2483");
+			else {Serial.print("unknown value: "); Serial.println(value);}
+			break;
+		case BANDWIDTH:
+			if(value == 0) Serial.println("unknown");
+			else if(value == 1) Serial.println("125");
+			else if(value == 2) Serial.println("250");
+			else if(value == 3) Serial.println("500");
+			else {Serial.print("unknown value: "); Serial.println(value);}
+			break;
+		case CODING_RATE:
+			if(value == 0) Serial.println("4/5");
+			else if(value == 1) Serial.println("4/6");
+			else if(value == 2) Serial.println("4/7");
+			else if(value == 3) Serial.println("4/8");
+			else {Serial.print("unknown value: "); Serial.println(value);}
+			break;
+		case FREQUENCYBAND:
+			if(value == 0) Serial.println("433");
+			else if(value == 1) Serial.println("868");
+			else {Serial.print("unknown value: "); Serial.println(value);}
+			break;
+		case SP_FACTOR:
+			if(value == 0) Serial.println("unknown");
+			else if(value == 1) Serial.println("sf7");
+			else if(value == 2) Serial.println("sf8");
+			else if(value == 3) Serial.println("sf9");
+			else if(value == 4) Serial.println("sf10");
+			else if(value == 5) Serial.println("sf11");
+			else if(value == 6) Serial.println("sf12");
+			else {Serial.print("unknown value: "); Serial.println(value);}
+			break;
+		default: 
+			Serial.println(value);
+			break;
+	}
 }
 
 //sends the previously built complex data packet to the cloud for the sensor with the specified
