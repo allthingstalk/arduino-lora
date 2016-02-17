@@ -54,6 +54,7 @@ void setup()
   pinMode(doorSensor, INPUT);
   
   Serial.begin(SERIAL_BAUD);
+  
   Serial1.begin(Modem.getDefaultBaudRate());                // Init the baud rate of the serial connection so that it's ok for the modem
 
   Serial.println("   _");
@@ -67,13 +68,20 @@ void setup()
   currentDoorValue = digitalRead(doorSensor);                  // Set the initial state
   
   Device.SetMaxSendRetry(0);                                   // Set max retries for sending the packet to 0
+  if(isConnected == false)                                    // Retry connecting LoRa communication
+    tryConnect();
+  delay(5000);
+  Serial.println("Initialize doorstatus");
+  sendDoorSensor(false);    // init doorstatus
+  Serial.println("Waiting for first payload to be sent in approx 1 minute"); 
 }
 
 void loop() 
 {
-  if(isConnected == false)               // Retry connecting if needed while already counting visits locally
+  if(isConnected == false)                                    // Retry connecting LoRa communication
     tryConnect();
 
+ 
   readDoorSensor();    // Check status of container door
 
   if(millis() - lastSent > 60000)     // Send a TPH value every 60 second
@@ -82,12 +90,13 @@ void loop()
     readTPHSensor();           // Check container environment values
     sendTPHSensor();
 
-    TPHState >= 2 ? TPHState = 0 : TPHState++;   // Loop through TPH sensors 0 = temperature, 1 = humidity, 2 = pressure
+    TPHState >= 2 ? TPHState = 0 : TPHState++;                // Loop through TPH sensors 0 = temperature, 1 = humidity, 2 = pressure
+    Serial.println("Waiting for next payload to be sent in approx 1 minute"); 
   }
 
   if(!currentDoorValue && !sentOnce)
   {
-    sendDoorSensor(false);    // Door is opened!
+    sendDoorSensor(true);    // Door is opened!
     sentOnce = true;
   }
   
@@ -159,7 +168,8 @@ void readTPHSensor()
 
 void sendDoorSensor(bool val)
 {
-  Serial.println("** Alert: Container door is opened!");
+  if(val) Serial.println("** Alert: Container door is opened!");
+  else Serial.println("** Container door is closed");
   Device.Send(val, DOOR_SENSOR, false); 
 }
 
