@@ -63,7 +63,7 @@ void SendValue()
   Serial.print(value);
   Serial.println("   Analog (0-1023)");
   Serial.print("Sending");
-  Device.Send(value, AIR_QUALITY_SENSOR);
+  Device.Send(value, AIR_QUALITY_SENSOR, false);
 }
 
 

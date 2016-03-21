@@ -58,7 +58,7 @@ void loop()
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, DOOR_SENSOR);
+  Device.Send(val, DOOR_SENSOR, false);
 }
 
 

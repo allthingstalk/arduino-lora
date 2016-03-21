@@ -62,7 +62,7 @@ void loop()
 bool SendValue(bool val)
 {
   Serial.print("Data: ");Serial.println(val);
-  bool res = Device.Send(val, BINARY_SENSOR);
+  bool res = Device.Send(val, BINARY_SENSOR, false);
   if(res == false)
     Serial.println("maybe the last couple of packages were sent too quickly after each other? (min of 15 seconds recommended)");
   return res;

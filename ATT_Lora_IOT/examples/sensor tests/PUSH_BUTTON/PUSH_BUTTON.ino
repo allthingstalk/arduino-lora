@@ -55,7 +55,7 @@ void loop()
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PUSH_BUTTON);
+  Device.Send(val, PUSH_BUTTON, false);
 }
 
 

@@ -58,7 +58,7 @@ void loop()
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PIR_SENSOR);
+  Device.Send(val, PIR_SENSOR, false);
 }
 
 

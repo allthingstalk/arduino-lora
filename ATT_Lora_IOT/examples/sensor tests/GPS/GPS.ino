@@ -60,7 +60,7 @@ void SendValue()
   Device.Queue(longitude);
   Device.Queue(altitude);
   Device.Queue(timestamp);
-  Device.Send(GPS);
+  Device.Send(GPS, false);
   Serial.print("Coordinates: ");
   Serial.print(latitude, 4);
   Serial.print(",");

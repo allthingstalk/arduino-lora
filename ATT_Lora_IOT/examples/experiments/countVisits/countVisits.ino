@@ -89,7 +89,7 @@ void loop()
 void sendVisitCount()
 {
   Serial.print("Send visit count: ");Serial.println(visitCount);
-  Device.Send(visitCount, INTEGER_SENSOR);                 // always send visit count to keep the cloud in sync with the device
+  Device.Send(visitCount, INTEGER_SENSOR, false);                 // always send visit count to keep the cloud in sync with the device
   prevVisitCountSent = visitCount;
   lastSentAt = millis();
 }

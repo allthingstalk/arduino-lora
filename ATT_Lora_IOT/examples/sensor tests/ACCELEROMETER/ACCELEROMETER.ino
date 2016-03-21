@@ -75,7 +75,7 @@ void SendValue()
   Device.Queue(accx);
   Device.Queue(accy);
   Device.Queue(accz);
-  Device.Send(ACCELEROMETER);
+  Device.Send(ACCELEROMETER, false);
 }
 
 

@@ -57,7 +57,7 @@ void SendValue()
 {
   Serial.print("Sending value: ");
   Serial.println(value);
-  Device.Send(value, LIGHT_SENSOR);
+  Device.Send(value, LIGHT_SENSOR, false);
 }
 
 

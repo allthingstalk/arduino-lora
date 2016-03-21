@@ -112,17 +112,17 @@ void SendSensorValues()
     Serial.println("Start uploading data to the ATT cloud Platform");
     Serial.println("----------------------------------------------");
     Serial.println("Sending sound value... ");
-    Device.Send(soundValue, LOUDNESS_SENSOR);
+    Device.Send(soundValue, LOUDNESS_SENSOR, false);
     Serial.println("Sending light value... "); 
-    Device.Send(lightValue, LIGHT_SENSOR);
+    Device.Send(lightValue, LIGHT_SENSOR, false);
     Serial.println("Sending temperature value... ");
-    Device.Send(temp, TEMPERATURE_SENSOR);
+    Device.Send(temp, TEMPERATURE_SENSOR, false);
     Serial.println("Sending humidity value... ");  
-    Device.Send(hum, HUMIDITY_SENSOR);
+    Device.Send(hum, HUMIDITY_SENSOR, false);
     Serial.println("Sending pressure value... ");  
-    Device.Send(pres, PRESSURE_SENSOR);
+    Device.Send(pres, PRESSURE_SENSOR, false);
     Serial.println("Sending air quality value... ");  
-    Device.Send(airValue, AIR_QUALITY_SENSOR);
+    Device.Send(airValue, AIR_QUALITY_SENSOR, false);
 }
 
 void DisplaySensorValues()

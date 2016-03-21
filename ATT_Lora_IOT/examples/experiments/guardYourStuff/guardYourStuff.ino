@@ -169,7 +169,7 @@ void SendCoordinates()
   Device.Queue(longitude);
   Device.Queue(altitude);
   Device.Queue(timestamp);
-  Device.Send(GPS);
+  Device.Send(GPS, false);
   Serial.print("lng: ");
   Serial.print(longitude, 4);
   Serial.print(", lat: ");

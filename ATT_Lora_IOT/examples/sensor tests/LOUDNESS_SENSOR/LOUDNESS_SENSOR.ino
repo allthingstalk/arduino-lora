@@ -55,7 +55,7 @@ void SendValue()
 {
   Serial.print("Value: ");
   Serial.println(val);
-  Device.Send(val, LOUDNESS_SENSOR);
+  Device.Send(val, LOUDNESS_SENSOR, false);
 }
 
 

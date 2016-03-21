@@ -55,7 +55,7 @@ void SendValue(bool val)
 {
   Serial.print("New value: ");
   Serial.println(val);
-  Device.Send(val, BINARY_TILT_SENSOR);
+  Device.Send(val, BINARY_TILT_SENSOR, false);
 }
 
 
