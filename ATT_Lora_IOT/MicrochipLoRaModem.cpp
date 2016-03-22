@@ -24,7 +24,7 @@ MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream)
 	_stream = stream;
 }
 
-void MicrochipLoRaModem::Stop()
+bool MicrochipLoRaModem::Stop()
 {
 #ifdef FULLDEBUG
 	Serial.println("[resetDevice]");
@@ -33,13 +33,13 @@ void MicrochipLoRaModem::Stop()
 	_stream->print(STR_CMD_RESET);
 	_stream->print(CRLF);
 
-	expectString(STR_DEVICE_TYPE);
+	return expectString(STR_DEVICE_TYPE);
 }
 
-void MicrochipLoRaModem::SetLoRaWan(bool adr)
+bool MicrochipLoRaModem::SetLoRaWan(bool adr)
 {
 	//lorawan should be on by default (no private supported)
-	setMacParam(STR_ADR, BOOL_TO_ONOFF(adr));			//set to adaptive variable rate transmission
+	return setMacParam(STR_ADR, BOOL_TO_ONOFF(adr));			//set to adaptive variable rate transmission
 }
 
 unsigned int MicrochipLoRaModem::getDefaultBaudRate() 
@@ -47,28 +47,28 @@ unsigned int MicrochipLoRaModem::getDefaultBaudRate()
 	return 57600; 
 };
 
-void MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
+bool MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
 {
 #ifdef FULLDEBUG
 	Serial.println("Setting the DevAddr");
 #endif	
-	setMacParam(STR_DEV_ADDR, devAddress, 4); 
+	return setMacParam(STR_DEV_ADDR, devAddress, 4); 
 }
 
-void MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
+bool MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
 {
 	#ifdef FULLDEBUG
 	Serial.println("Setting the AppSKey"); 
 	#endif	
-	setMacParam(STR_APP_SESSION_KEY, appKey, 16);
+	return setMacParam(STR_APP_SESSION_KEY, appKey, 16);
 }
 
-void MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
+bool MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 {
 	#ifdef FULLDEBUG
 	Serial.println("Setting the NwkSKey"); 
 	#endif	
-	setMacParam(STR_NETWORK_SESSION_KEY, nwksKey, 16);
+	return setMacParam(STR_NETWORK_SESSION_KEY, nwksKey, 16);
 }
 
 bool MicrochipLoRaModem::Start()

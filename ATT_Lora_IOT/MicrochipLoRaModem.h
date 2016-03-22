@@ -38,19 +38,19 @@ class MicrochipLoRaModem: public LoRaModem
 		// Returns the required baudrate for the device
 		unsigned int getDefaultBaudRate();
 		//stop the modem.
-		void Stop();
+		bool Stop();
 		//set the modem in LoRaWan mode (vs private networks)
 		//adr = adaptive data rate. true= use, false = none adaptive data rate
-		void SetLoRaWan(bool adr = true);
+		bool SetLoRaWan(bool adr = true);
 		//assign a device address to the modem
 		//devAddress must be 4 bytes long
-		void SetDevAddress(unsigned char* devAddress);
+		bool SetDevAddress(unsigned char* devAddress);
 		//set the app session key for the modem communication
 		//app session key must be 16 bytes long
-		void SetAppKey(unsigned char* appKey);
+		bool SetAppKey(unsigned char* appKey);
 		//set the network session key
 		//network session key must be 16 bytes long
-		void SetNWKSKey(unsigned char*  nwksKey);
+		bool SetNWKSKey(unsigned char*  nwksKey);
 		//start the modem , returns true if successful
 		bool Start();
 		//send a data packet to the server

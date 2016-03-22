@@ -32,42 +32,42 @@ unsigned int EmbitLoRaModem::getDefaultBaudRate()
 	return SERIAL_BAUD; 
 };
 
-void EmbitLoRaModem::Stop()
+bool EmbitLoRaModem::Stop()
 {
 	Serial.println("Sending the network stop command");
 	SendPacket(CMD_STOP, sizeof(CMD_STOP));
-	ReadPacket();
+	return ReadPacket();
 }
 
-void EmbitLoRaModem::SetLoRaWan(bool adr)
+bool EmbitLoRaModem::SetLoRaWan(bool adr)
 {
 	Serial.println("Setting the network preferences to LoRaWAN private network");
 	if(adr == true)
 		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET));
 	else
 		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET_NO_ADR));
-	ReadPacket();
+	return ReadPacket();
 }
 
-void EmbitLoRaModem::SetDevAddress(unsigned char* devAddress)
+bool EmbitLoRaModem::SetDevAddress(unsigned char* devAddress)
 {
 	Serial.println("Setting the DevAddr");
 	SendPacket(CMD_DEV_ADDR, sizeof(CMD_DEV_ADDR), devAddress, 4); 
-	ReadPacket();
+	return ReadPacket();
 }
 
-void EmbitLoRaModem::SetAppKey(unsigned char* appKey)
+bool EmbitLoRaModem::SetAppKey(unsigned char* appKey)
 {
 	Serial.println("Setting the AppSKey");   
 	SendPacket(CMD_APPSKEY, sizeof(CMD_APPSKEY), appKey, 16);
-	ReadPacket();
+	return ReadPacket();
 }
 
-void EmbitLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
+bool EmbitLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 {
 	Serial.println("Setting the NwkSKey");
 	SendPacket(CMD_NWKSKEY, sizeof(CMD_NWKSKEY), nwksKey, 16);
-	ReadPacket();
+	return ReadPacket();
 }
 
 bool EmbitLoRaModem::Start()
@@ -154,7 +154,7 @@ void EmbitLoRaModem::sendByte(unsigned char data)
 	printHex(data);
 }
 
-void EmbitLoRaModem::ReadPacket()
+bool EmbitLoRaModem::ReadPacket()
 {
 	uint32_t maxTS = millis() + PACKET_TIME_OUT;
 	uint16_t length = 4;
@@ -180,8 +180,10 @@ void EmbitLoRaModem::ReadPacket()
 
 	if (i < length) {
 		Serial.print("Timeout");
+		return false;
 	}
 	Serial.println();
+	return true;
 }
 
 unsigned char EmbitLoRaModem::ReadPacket(unsigned char index)

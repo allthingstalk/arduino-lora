@@ -16,17 +16,33 @@ ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY),  _minTimeBe
 //connect with the to the lora gateway
 bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr)
 {
-	_modem->Stop();								//stop any previously running modems
-	_modem->SetLoRaWan(adr);						//switch to LoRaWan mode instead of peer to peer
-	_modem->SetDevAddress(devAddress);
-	_modem->SetAppKey(appKey);
-	_modem->SetNWKSKey(nwksKey);
+	if(!_modem->Stop()){								//stop any previously running modems
+		Serial.println("can't communicate with modem: possible hardware issues");
+		return false;
+	}
+	
+	if (!_modem->SetLoRaWan(adr)){						//switch to LoRaWan mode instead of peer to peer				
+		Serial.println("can't switch modem to lorawan mode: possible hardware issues?");
+		return false;
+	}
+	if(!_modem->SetDevAddress(devAddress)){
+		Serial.println("can't assign device address to modem: possible hardware issues?");
+		return false;
+	}
+	if(!_modem->SetAppKey(appKey)){
+		Serial.println("can't assign app session key to modem: possible hardware issues?");
+		return false;
+	}
+	if(!_modem->SetNWKSKey(nwksKey)){
+		Serial.println("can't assign network session key to modem: possible hardware issues?");
+		return false;
+	}
 	bool result = _modem->Start();								//start the modem up 
 	if(result == true)
-		Serial.println("modem initialized");
+		Serial.println("modem initialized, communication with base station established");
 	else
-		Serial.println("failed to initialize modem");
-	return result;									//we have created a connection succesfully.
+		Serial.println("Modem is responding, but failed to communicate with base station. Possibly out of reach or invalid credentials.");
+	return result;									//we have created a connection successfully.
 }
 
 //check for any incoming data
