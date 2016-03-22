@@ -11,9 +11,10 @@ Original author: Jan Bogaerts (2015)
 #include "Arduino.h"
 #include <string.h>
 
-#include "LoRaModem.h"
-#include "LoRaPacket.h"
-
+#include <LoRaModem.h>
+#include <DataPacket.h>
+#include <instrumentationParamEnum.h>
+#include <InstrumentationPacket.h>
 
 /////////////////////////////////////////////////////////////
 //	Configuration
@@ -59,24 +60,32 @@ class ATTDevice
 		//void AddAsset(short id, String name, String description, bool isActuator, String type);
 		
 		//send a bool data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknolodge, otherwise no acknowledge is waited for.
 		bool Send(bool value, short id, bool ack = true);
 		
 		//send an integer value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(short value, short id, bool ack = true);
 		
 		//send a string data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(String value, short id, bool ack = true);
 		
 		//send a gloat data value to the cloud server for the sensor with the specified id.
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(float value, short id, bool ack = true);
 		
 		//sends the previously built complex data packet to the cloud for the sensor with the specified
-		//if ack = true -> request acknolodge, otherwise no acknolodge is waited for.
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 		bool Send(short id, bool ack = true);
+		
+		//sends the previously built Lora packet to the cloud. This can be a regulat packet, instrumentation packet,...
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
+		bool Send(LoRaPacket* data, bool ack = true);
+		
+		//collects all the instrumentation data from the modem (RSSI, ADR, datarate,..) and sends it over
+		//if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
+		bool SendInstrumentation(bool ack = true);
 		
 		//loads a bool data value into the data packet that is being prepared to send to the
 		//cloud server.
@@ -113,11 +122,14 @@ class ATTDevice
 		
 	private:	
 		//builds the content that has to be sent to the cloud using mqtt (either a csv value or a json string)
-		LoRaPacket _data;
+		DataPacket _data;
 		LoRaModem* _modem;
 		short _maxRetries;								//the max nr of times that a send function will try to resend a message.
 		short _minTimeBetweenSend;
 		unsigned long _lastTimeSent;					//the last time that a message was sent, so we can block sending if user calls send to quickly
+		
+		//store the param in the  data packet, and print to serial.
+		void SetInstrumentationParam(InstrumentationPacket* data, instrumentationParam param, char* name, int value);
 		
 };
 

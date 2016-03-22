@@ -20,6 +20,8 @@
 #define STR_CMD_RESET "sys reset"
 #define STR_DEVICE_TYPE "RN2483"
 
+#define STR_CMD_GET_MAC "mac get "
+#define STR_CMD_GET_RADIO "radio get "
 #define STR_CMD_SET "mac set "
 #define STR_RETRIES "retx "
 #define STR_DEV_ADDR "devaddr "

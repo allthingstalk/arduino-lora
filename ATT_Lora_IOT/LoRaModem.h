@@ -9,6 +9,7 @@ Original author: Jan Bogaerts (2015)
 #define LoRaModem_h
 
 #include <LoRaPacket.h>
+#include <instrumentationParamEnum.h>
 
 //this class represents the ATT cloud platform.
 class LoRaModem
@@ -36,6 +37,10 @@ class LoRaModem
 		virtual bool Send(LoRaPacket* packet, bool ack = true) = 0;
 		//process any incoming packets from the modem
 		virtual void ProcessIncoming() = 0;
+		//extract the specified instrumentation parameter from the modem and return the value
+		virtual int GetParam(instrumentationParam param) = 0;
+		//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
+		virtual int GetModemId() = 0;
 };
 
 #endif

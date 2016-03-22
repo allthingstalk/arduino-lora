@@ -8,9 +8,9 @@ Original author: Jan Bogaerts (2015)
 #ifndef EmbitLoRaModem_h
 #define EmbitLoRaModem_h
 
-#include "LoRaModem.h"
-#include "LoRaPacket.h"
-//#include <stream>
+#include <LoRaModem.h>
+#include <LoRaPacket.h>
+#include <instrumentationParamEnum.h>
 
 //this class represents the ATT cloud platform.
 class EmbitLoRaModem: public LoRaModem
@@ -39,7 +39,11 @@ class EmbitLoRaModem: public LoRaModem
 		//send a data packet to the server
 		bool Send(LoRaPacket* packet, bool ack = true);
 		//process any incoming packets from the modem
-		 void ProcessIncoming();
+		void ProcessIncoming();
+		//extract the specified instrumentation parameter from the modem and return the value
+		int GetParam(instrumentationParam param);
+		//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
+		int GetModemId();
 	private:
 		void printHex(unsigned char hex);
 		void sendByte(unsigned char data);
