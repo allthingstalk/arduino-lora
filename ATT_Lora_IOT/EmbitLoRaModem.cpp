@@ -3,7 +3,8 @@
 */
 
 #include "EmbitLoRaModem.h"
-#include <arduino.h>
+#include <arduino.h>  			//required for the millis() function
+#include "Utils.h"
 
 #define PORT 0x01
 #define SERIAL_BAUD 9600
@@ -23,9 +24,10 @@ unsigned char CMD_SEND_PREFIX_NO_ACK[4] = { 0x50, 0x08, 0x00, PORT };
 
 unsigned char sendBuffer[52];
 
-EmbitLoRaModem::EmbitLoRaModem(Stream* stream)
+EmbitLoRaModem::EmbitLoRaModem(Stream* stream, Stream* monitor)
 {
 	_stream = stream;
+	_monitor = monitor;
 }
 
 unsigned int EmbitLoRaModem::getDefaultBaudRate() 
@@ -35,14 +37,14 @@ unsigned int EmbitLoRaModem::getDefaultBaudRate()
 
 bool EmbitLoRaModem::Stop()
 {
-	Serial.println("Sending the network stop command");
+	PRINTLN("Sending the network stop command");
 	SendPacket(CMD_STOP, sizeof(CMD_STOP));
 	return ReadPacket();
 }
 
 bool EmbitLoRaModem::SetLoRaWan(bool adr)
 {
-	Serial.println("Setting the network preferences to LoRaWAN private network");
+	PRINTLN("Setting the network preferences to LoRaWAN private network");
 	if(adr == true)
 		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET));
 	else
@@ -52,28 +54,28 @@ bool EmbitLoRaModem::SetLoRaWan(bool adr)
 
 bool EmbitLoRaModem::SetDevAddress(unsigned char* devAddress)
 {
-	Serial.println("Setting the DevAddr");
+	PRINTLN("Setting the DevAddr");
 	SendPacket(CMD_DEV_ADDR, sizeof(CMD_DEV_ADDR), devAddress, 4); 
 	return ReadPacket();
 }
 
 bool EmbitLoRaModem::SetAppKey(unsigned char* appKey)
 {
-	Serial.println("Setting the AppSKey");   
+	PRINTLN("Setting the AppSKey");   
 	SendPacket(CMD_APPSKEY, sizeof(CMD_APPSKEY), appKey, 16);
 	return ReadPacket();
 }
 
 bool EmbitLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 {
-	Serial.println("Setting the NwkSKey");
+	PRINTLN("Setting the NwkSKey");
 	SendPacket(CMD_NWKSKEY, sizeof(CMD_NWKSKEY), nwksKey, 16);
 	return ReadPacket();
 }
 
 bool EmbitLoRaModem::Start()
 {
-	Serial.println("Sending the netowrk start command");
+	PRINTLN("Sending the netowrk start command");
 	SendPacket(CMD_START, sizeof(CMD_START));
 	ReadPacket();
 	
@@ -84,11 +86,11 @@ bool EmbitLoRaModem::Start()
 bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(sendBuffer);
-	Serial.println("Sending payload: ");
+	PRINTLN("Sending payload: ");
 	for (unsigned char i = 0; i < length; i++) {
 		printHex(sendBuffer[i]);
 	}
-	Serial.println();
+	PRINTLN();
   
 	if(ack == true)
 		SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), sendBuffer, length);
@@ -96,7 +98,7 @@ bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 		SendPacket(CMD_SEND_PREFIX_NO_ACK, sizeof(CMD_SEND_PREFIX_NO_ACK), sendBuffer, length);
 	unsigned char result = ReadPacket(3);
 	if(result != 0){
-		Serial.println("Failed to send packet");
+		PRINTLN("Failed to send packet");
 		return false;
 	}
 	else
@@ -106,7 +108,7 @@ bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 
 void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length)
 {
-	Serial.print("Sending: ");
+	PRINT("Sending: ");
 	uint16_t packetLength = length + 3;
 	unsigned char* len = (unsigned char*)&packetLength;
 	unsigned char CRC = len[1] + len[0];
@@ -121,12 +123,12 @@ void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length)
 	}
 	  
 	sendByte(CRC);
-	Serial.println();
+	PRINTLN();
 }
 
 void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length, unsigned char* data2, uint16_t length2)
 {
-	Serial.print("Sending: ");
+	PRINT("Sending: ");
 	uint16_t packetLength = length + length2 + 3;
 	unsigned char* len = (unsigned char*)&packetLength;
 	unsigned char CRC = len[1] + len[0];
@@ -146,7 +148,7 @@ void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length, unsigned c
 	}
 	  
 	sendByte(CRC);
-	Serial.println();
+	PRINTLN();
 }
 
 void EmbitLoRaModem::sendByte(unsigned char data)
@@ -161,7 +163,7 @@ bool EmbitLoRaModem::ReadPacket()
 	uint16_t length = 4;
 	unsigned char firstByte = 0;
   
-	Serial.print("Receiving: "); 
+	PRINT("Receiving: "); 
 
 	size_t i = 0;
 	while ((maxTS > millis()) && (i < length)) {
@@ -180,10 +182,10 @@ bool EmbitLoRaModem::ReadPacket()
 	}
 
 	if (i < length) {
-		Serial.print("Timeout");
+		PRINT("Timeout");
 		return false;
 	}
-	Serial.println();
+	PRINTLN();
 	return true;
 }
 
@@ -194,7 +196,7 @@ unsigned char EmbitLoRaModem::ReadPacket(unsigned char index)
 	unsigned char firstByte = 0;
 	unsigned char result = 0;
   
-	Serial.print("Receiving: "); 
+	PRINT("Receiving: "); 
 
 	size_t i = 0;
 	while ((maxTS > millis()) && (i < length)) {
@@ -214,9 +216,9 @@ unsigned char EmbitLoRaModem::ReadPacket(unsigned char index)
 	}
 
 	if (i < length) {
-		Serial.print("Timeout");
+		PRINT("Timeout");
 	}
-	Serial.println();
+	PRINTLN();
 	return result;
 }
 
@@ -229,14 +231,14 @@ unsigned char EmbitLoRaModem::ReadPacket(unsigned char index)
 void EmbitLoRaModem::printHex(unsigned char hex)
 {
   char hexTable[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-  Serial.print(hexTable[hex /16]);
-  Serial.print(hexTable[hex % 16]);
-  Serial.print(' ');
+  PRINT(hexTable[hex /16]);
+  PRINT(hexTable[hex % 16]);
+  PRINT(' ');
 }
 //extract the specified instrumentation parameter from the modem and return the value
 int EmbitLoRaModem::GetParam(instrumentationParam param)
 {
-	Serial.println("to be implemented: GetParam for embit modems");
+	PRINTLN("to be implemented: GetParam for embit modems");
 }
 //returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
 int EmbitLoRaModem::GetModemId()

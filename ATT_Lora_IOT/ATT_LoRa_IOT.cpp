@@ -3,13 +3,15 @@
 */
 
 #include <ATT_LoRa_IOT.h>
-//#include <arduino.h>
+#include "Utils.h"
+#include <arduino.h>			//still required for the 'delay' function. use #ifdef for other platforms.
 
 
 //create the object
-ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY),  _minTimeBetweenSend(MIN_TIME_BETWEEN_SEND)
+ATTDevice::ATTDevice(LoRaModem* modem, Stream* monitor): _maxRetries(SEND_MAX_RETRY),  _minTimeBetweenSend(MIN_TIME_BETWEEN_SEND)
 {
 	_modem = modem;
+	 _monitor = monitor;
 	_lastTimeSent = 0;
 }
 
@@ -17,31 +19,33 @@ ATTDevice::ATTDevice(LoRaModem* modem): _maxRetries(SEND_MAX_RETRY),  _minTimeBe
 bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr)
 {
 	if(!_modem->Stop()){								//stop any previously running modems
-		Serial.println("can't communicate with modem: possible hardware issues");
+		PRINTLN("can't communicate with modem: possible hardware issues");
 		return false;
 	}
 	
 	if (!_modem->SetLoRaWan(adr)){						//switch to LoRaWan mode instead of peer to peer				
-		Serial.println("can't switch modem to lorawan mode: possible hardware issues?");
+		PRINTLN("can't switch modem to lorawan mode: possible hardware issues?");
 		return false;
 	}
 	if(!_modem->SetDevAddress(devAddress)){
-		Serial.println("can't assign device address to modem: possible hardware issues?");
+		PRINTLN("can't assign device address to modem: possible hardware issues?");
 		return false;
 	}
 	if(!_modem->SetAppKey(appKey)){
-		Serial.println("can't assign app session key to modem: possible hardware issues?");
+		PRINTLN("can't assign app session key to modem: possible hardware issues?");
 		return false;
 	}
 	if(!_modem->SetNWKSKey(nwksKey)){
-		Serial.println("can't assign network session key to modem: possible hardware issues?");
+		PRINTLN("can't assign network session key to modem: possible hardware issues?");
 		return false;
 	}
 	bool result = _modem->Start();								//start the modem up 
-	if(result == true)
-		Serial.println("modem initialized, communication with base station established");
-	else
-		Serial.println("Modem is responding, but failed to communicate with base station. Possibly out of reach or invalid credentials.");
+	if(result == true){
+		PRINTLN("modem initialized, communication with base station established");
+	}
+	else{
+		PRINTLN("Modem is responding, but failed to communicate with base station. Possibly out of reach or invalid credentials.");
+	}
 	return result;									//we have created a connection successfully.
 }
 
@@ -80,7 +84,7 @@ bool ATTDevice::Send(float value, short id, bool ack)
 //if ack = true -> request acknowledge, otherwise no acknowledge is waited for.
 bool ATTDevice::SendInstrumentation(bool ack)
 {
-	Serial.println("instrumentation values:");
+	PRINTLN("instrumentation values:");
 	InstrumentationPacket data;
 	SetInstrumentationParam(&data, MODEM, "modem", _modem->GetModemId());
 	SetInstrumentationParam(&data, DATA_RATE, "data rate", _modem->GetParam(DATA_RATE));
@@ -101,47 +105,47 @@ bool ATTDevice::SendInstrumentation(bool ack)
 void ATTDevice::SetInstrumentationParam(InstrumentationPacket* data, instrumentationParam param, char* name, int value)
 {
 	data->SetParam(param, value);
-	Serial.print(name);
-	Serial.print(": ");
+	PRINT(name);
+	PRINT(": ");
 	switch(param){
 		case MODEM:
-			if(value == 0) Serial.println("unknown");
-			else if(value == 1) Serial.println("multitech mdot");
-			else if(value == 2) Serial.println("embit-EMB-LR1272(E)");
-			else if(value == 3) Serial.println("microchip RN2483");
-			else {Serial.print("unknown value: "); Serial.println(value);}
+			if(value == 0){ PRINTLN("unknown");}
+			else if(value == 1){ PRINTLN("multitech mdot");}
+			else if(value == 2){ PRINTLN("embit-EMB-LR1272(E)");}
+			else if(value == 3){ PRINTLN("microchip RN2483");}
+			else {PRINT("unknown value: "); PRINTLN(value);}
 			break;
 		case BANDWIDTH:
-			if(value == 0) Serial.println("unknown");
-			else if(value == 1) Serial.println("125");
-			else if(value == 2) Serial.println("250");
-			else if(value == 3) Serial.println("500");
-			else {Serial.print("unknown value: "); Serial.println(value);}
+			if(value == 0){ PRINTLN("unknown");}
+			else if(value == 1){ PRINTLN("125");}
+			else if(value == 2){ PRINTLN("250");}
+			else if(value == 3){ PRINTLN("500");}
+			else {PRINT("unknown value: "); PRINTLN(value);}
 			break;
 		case CODING_RATE:
-			if(value == 0) Serial.println("4/5");
-			else if(value == 1) Serial.println("4/6");
-			else if(value == 2) Serial.println("4/7");
-			else if(value == 3) Serial.println("4/8");
-			else {Serial.print("unknown value: "); Serial.println(value);}
+			if(value == 0){ PRINTLN("4/5");}
+			else if(value == 1){ PRINTLN("4/6");}
+			else if(value == 2){ PRINTLN("4/7");}
+			else if(value == 3){ PRINTLN("4/8");}
+			else {PRINT("unknown value: "); PRINTLN(value);}
 			break;
 		case FREQUENCYBAND:
-			if(value == 0) Serial.println("433");
-			else if(value == 1) Serial.println("868");
-			else {Serial.print("unknown value: "); Serial.println(value);}
+			if(value == 0){ PRINTLN("433");}
+			else if(value == 1){ PRINTLN("868");}
+			else {PRINT("unknown value: "); PRINTLN(value);}
 			break;
 		case SP_FACTOR:
-			if(value == 0) Serial.println("unknown");
-			else if(value == 1) Serial.println("sf7");
-			else if(value == 2) Serial.println("sf8");
-			else if(value == 3) Serial.println("sf9");
-			else if(value == 4) Serial.println("sf10");
-			else if(value == 5) Serial.println("sf11");
-			else if(value == 6) Serial.println("sf12");
-			else {Serial.print("unknown value: "); Serial.println(value);}
+			if(value == 0){ PRINTLN("unknown");}
+			else if(value == 1){ PRINTLN("sf7");}
+			else if(value == 2){ PRINTLN("sf8");}
+			else if(value == 3){ PRINTLN("sf9");}
+			else if(value == 4){ PRINTLN("sf10");}
+			else if(value == 5){ PRINTLN("sf11");}
+			else if(value == 6){ PRINTLN("sf12");}
+			else {PRINT("unknown value: "); PRINTLN(value);}
 			break;
 		default: 
-			Serial.println(value);
+			PRINTLN(value);
 			break;
 	}
 }
@@ -159,19 +163,19 @@ bool ATTDevice::Send(LoRaPacket* data, bool ack)
 	unsigned long curTime = millis();
 	if(_lastTimeSent != 0 && _lastTimeSent + _minTimeBetweenSend > curTime)
 	{
-		Serial.print("adhering to LoRa bandwith usage, delaying next message for ");
-		Serial.print((_minTimeBetweenSend + _lastTimeSent - curTime)/1000); Serial.println(" seconds");
-		//Serial.print("curTime = "); Serial.print(curTime); Serial.print(", prevTime = "); Serial.print(_lastTimeSent); Serial.print(", dif = ");
-		//Serial.println(_minTimeBetweenSend + _lastTimeSent - curTime);
+		PRINT("adhering to LoRa bandwith usage, delaying next message for ");
+		PRINT((_minTimeBetweenSend + _lastTimeSent - curTime)/1000); PRINTLN(" seconds");
+		//PRINT("curTime = "); PRINT(curTime); PRINT(", prevTime = "); PRINT(_lastTimeSent); PRINT(", dif = ");
+		//PRINTLN(_minTimeBetweenSend + _lastTimeSent - curTime);
 		delay(_minTimeBetweenSend + _lastTimeSent - curTime);
 	}
 	bool res = _modem->Send(data, ack);
 	while(res == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
 	{
 		nrRetries++;
-		Serial.print("retry in "); Serial.print(_minTimeBetweenSend/1000); Serial.println(" seconds");
+		PRINT("retry in "); PRINT(_minTimeBetweenSend/1000); PRINTLN(" seconds");
 		delay(_minTimeBetweenSend);
-		Serial.println("resending");
+		PRINTLN("resending");
 		res = _modem->Send(data, ack);
 	}
 	data->Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well

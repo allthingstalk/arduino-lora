@@ -11,5 +11,8 @@
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
+#define PRINTLN(...) {if(_monitor) _monitor->println(__VA_ARGS__); }
+#define PRINT(...) {if(_monitor) _monitor->print(__VA_ARGS__); }
+
 #endif
 

@@ -8,6 +8,7 @@
 #include <Arduino.h>
 
 #define PORT 0x01
+//#define FULLDEBUG
 
 #define PACKET_TIME_OUT 45000
 
@@ -20,15 +21,16 @@ typedef struct StringEnumPair
 
 unsigned char microchipSendBuffer[DEFAULT_PAYLOAD_SIZE];
 
-MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream)
+MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream, Stream *monitor)
 {
 	_stream = stream;
+	_monitor = monitor;
 }
 
 bool MicrochipLoRaModem::Stop()
 {
 #ifdef FULLDEBUG
-	Serial.println("[resetDevice]");
+	PRINTLN("[resetDevice]");
 #endif
 
 	_stream->print(STR_CMD_RESET);
@@ -51,7 +53,7 @@ unsigned int MicrochipLoRaModem::getDefaultBaudRate()
 bool MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
 {
 #ifdef FULLDEBUG
-	Serial.println("Setting the DevAddr");
+	PRINTLN("Setting the DevAddr");
 #endif	
 	return setMacParam(STR_DEV_ADDR, devAddress, 4); 
 }
@@ -59,7 +61,7 @@ bool MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
 bool MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
 {
 	#ifdef FULLDEBUG
-	Serial.println("Setting the AppSKey"); 
+	PRINTLN("Setting the AppSKey"); 
 	#endif	
 	return setMacParam(STR_APP_SESSION_KEY, appKey, 16);
 }
@@ -67,7 +69,7 @@ bool MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
 bool MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 {
 	#ifdef FULLDEBUG
-	Serial.println("Setting the NwkSKey"); 
+	PRINTLN("Setting the NwkSKey"); 
 	#endif	
 	return setMacParam(STR_NETWORK_SESSION_KEY, nwksKey, 16);
 }
@@ -75,16 +77,16 @@ bool MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
 bool MicrochipLoRaModem::Start()
 {
 	#ifdef FULLDEBUG
-	Serial.println("Sending the network start commands");
+	PRINTLN("Sending the network start commands");
 	#endif		
 	_stream->print(STR_CMD_JOIN);
 	_stream->print(STR_ABP);
 	_stream->print(CRLF);
 
 	#ifdef FULLDEBUG	
-	Serial.print(STR_CMD_JOIN);
-	Serial.print(STR_ABP);
-	Serial.print(CRLF);
+	PRINT(STR_CMD_JOIN);
+	PRINT(STR_ABP);
+	PRINT(CRLF);
 	#endif
 
 	return expectOK() && expectString(STR_ACCEPTED);
@@ -93,25 +95,27 @@ bool MicrochipLoRaModem::Start()
 bool MicrochipLoRaModem::Send(LoRaPacket* packet, bool ack)
 {
 	unsigned char length = packet->Write(microchipSendBuffer);
-	Serial.println("Sending payload: ");
+	PRINTLN("Sending payload: ");
 	for (unsigned char i = 0; i < length; i++) {
 		printHex(microchipSendBuffer[i]);
 	}
-	Serial.println();
+	PRINTLN();
 		
 	unsigned char result;
-	if(ack == true)
-	{
+	if(ack == true){
 		if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
-			Serial.println("[send] Non-fatal error: setting number of retries failed.");
+			PRINTLN("[send] Non-fatal error: setting number of retries failed.");
 		result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length) == NoError;
 	}
-	else
+	else{
 		result = macTransmit(STR_UNCONFIRMED, microchipSendBuffer, length) == NoError;
-	if(result)
-		Serial.println("Successfully sent packet");
-	else
-		Serial.println("Failed to send packet");
+	}
+	if(result){
+		PRINTLN("Successfully sent packet");
+	}
+	else{
+		PRINTLN("Failed to send packet");
+	}
 	return result;
 }
 
@@ -124,10 +128,10 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 	_stream->print(" ");
 	
 	#ifdef FULLDEBUG	
-	Serial.print(STR_CMD_MAC_TX);
-	Serial.print(type);
-	Serial.print(PORT);
-	Serial.print(" ");
+	PRINT(STR_CMD_MAC_TX);
+	PRINT(type);
+	PRINT(PORT);
+	PRINT(" ");
 	#endif
 
 	for (int i = 0; i < size; ++i)
@@ -135,14 +139,14 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(payload[i]))));
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(payload[i]))));
 		#ifdef FULLDEBUG		
-		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(payload[i]))));
-		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(payload[i]))));
+		PRINT(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(payload[i]))));
+		PRINT(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(payload[i]))));
 		#endif
 	}
 	_stream->print(CRLF);
 
 	#ifdef FULLDEBUG	
-	Serial.print(CRLF);
+	PRINT(CRLF);
 	#endif
 
 	// TODO lookup error
@@ -150,27 +154,27 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 		return TransmissionFailure;
 
 	#ifdef FULLDEBUG
-	Serial.println("Waiting for server response");
+	PRINTLN("Waiting for server response");
 	#endif
 	unsigned long timeout = millis() + RECEIVE_TIMEOUT;
 	while (millis() < timeout)
 	{
 		#ifdef FULLDEBUG	
-		Serial.print(".");
+		PRINT(".");
 		#endif
 		if (readLn() > 0)
 		{
 			#ifdef FULLDEBUG		
-			Serial.print(".(");
-			Serial.print(this->inputBuffer);
-			Serial.print(")");
+			PRINT(".(");
+			PRINT(this->inputBuffer);
+			PRINT(")");
 			#endif
 
 			if (strstr(this->inputBuffer, " ") != NULL) // to avoid double delimiter search 
 			{
 				// there is a splittable line -only case known is mac_rx
 				#ifdef FULLDEBUG				
-				Serial.println("Splittable response found");
+				PRINTLN("Splittable response found");
 				#endif
 				onMacRX();
 				return NoError; // TODO remove
@@ -179,31 +183,31 @@ unsigned char MicrochipLoRaModem::macTransmit(const char* type, const unsigned c
 			{
 				// done
 				#ifdef FULLDEBUG
-				Serial.println("Received mac_tx_ok");
+				PRINTLN("Received mac_tx_ok");
 				#endif
 				return NoError;
 			}
 			else
 			{
 				#ifdef FULLDEBUG
-				Serial.println("Some other string received (error)");
+				PRINTLN("Some other string received (error)");
 				#endif
 				return lookupMacTransmitError(this->inputBuffer);
 			}
 		}
 	}
-	Serial.println("Timed-out waiting for a response!");
+	PRINTLN("Timed-out waiting for a response!");
 	return Timeout;
 }
 
 uint8_t MicrochipLoRaModem::lookupMacTransmitError(const char* error)
 {
-	Serial.print("[lookupMacTransmitError]: ");
-	Serial.println(error);
+	PRINT("[lookupMacTransmitError]: ");
+	PRINTLN(error);
 
 	if (error[0] == 0)
 	{
-		Serial.println("[lookupMacTransmitError]: The string is empty!");
+		PRINTLN("[lookupMacTransmitError]: The string is empty!");
 		return NoResponse;
 	}
 
@@ -226,14 +230,14 @@ uint8_t MicrochipLoRaModem::lookupMacTransmitError(const char* error)
 	{
 		if (strcmp(p->stringValue, error) == 0)
 		{
-			Serial.print("[lookupMacTransmitError]: found ");
-			Serial.println(p->enumValue);
+			PRINT("[lookupMacTransmitError]: found ");
+			PRINTLN(p->enumValue);
 
 			return p->enumValue;
 		}
 	}
 
-	Serial.println("[lookupMacTransmitError]: not found!");
+	PRINTLN("[lookupMacTransmitError]: not found!");
 	return NoResponse;
 }
 
@@ -242,30 +246,30 @@ uint8_t MicrochipLoRaModem::lookupMacTransmitError(const char* error)
 bool MicrochipLoRaModem::expectString(const char* str, unsigned short timeout)
 {
 	#ifdef FULLDEBUG
-	Serial.print("[expectString] expecting ");
-	Serial.println(str);
+	PRINT("[expectString] expecting ");
+	PRINTLN(str);
 	#endif
 
 	unsigned long start = millis();
 	while (millis() < start + timeout)
 	{
 		#ifdef FULLDEBUG	
-		Serial.print(".");
+		PRINT(".");
 		#endif
 
 		if (readLn() > 0)
 		{
 			#ifdef FULLDEBUG		
-			Serial.print("(");
-			Serial.print(this->inputBuffer);
-			Serial.print(")");
+			PRINT("(");
+			PRINT(this->inputBuffer);
+			PRINT(")");
 			#endif
 
 			// TODO make more strict?
 			if (strstr(this->inputBuffer, str) != NULL)
 			{
 				#ifdef FULLDEBUG
-				Serial.println(" found a match!");
+				PRINTLN(" found a match!");
 				#endif
 				return true;
 			}
@@ -296,16 +300,16 @@ bool MicrochipLoRaModem::expectOK()
 bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char* paramValue, unsigned short size)
 {
 	#ifdef FULLDEBUG
-	Serial.print("[setMacParam] ");
-	Serial.print(paramName);
-	Serial.print("= [array]");
+	PRINT("[setMacParam] ");
+	PRINT(paramName);
+	PRINT("= [array]");
 	#endif
 
 	_stream->print(STR_CMD_SET);
 	_stream->print(paramName);
 	#ifdef FULLDEBUG
-	Serial.print(STR_CMD_SET);
-	Serial.print(paramName);
+	PRINT(STR_CMD_SET);
+	PRINT(paramName);
 	#endif
 
 	for (unsigned short i = 0; i < size; ++i)
@@ -313,14 +317,14 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char*
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(paramValue[i]))));
 		_stream->print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(paramValue[i]))));
 		#ifdef FULLDEBUG
-		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(paramValue[i]))));
-		Serial.print(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(paramValue[i])))); 
+		PRINT(static_cast<char>(NIBBLE_TO_HEX_CHAR(HIGH_NIBBLE(paramValue[i]))));
+		PRINT(static_cast<char>(NIBBLE_TO_HEX_CHAR(LOW_NIBBLE(paramValue[i])))); 
 		#endif
 	}
 	
 	_stream->print(CRLF);
 	#ifdef FULLDEBUG
-	Serial.print(CRLF);
+	PRINT(CRLF);
 	#endif
 
 	return expectOK();
@@ -330,10 +334,10 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const unsigned char*
 bool MicrochipLoRaModem::setMacParam(const char* paramName, uint8_t paramValue)
 {
 	#ifdef FULLDEBUG
-	Serial.print("[setMacParam] ");
-	Serial.print(paramName);
-	Serial.print("= ");
-	Serial.println(paramValue);
+	PRINT("[setMacParam] ");
+	PRINT(paramName);
+	PRINT("= ");
+	PRINTLN(paramValue);
 	#endif
 
 	_stream->print(STR_CMD_SET);
@@ -342,10 +346,10 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, uint8_t paramValue)
 	_stream->print(CRLF);
 	
 	#ifdef FULLDEBUG
-	Serial.print(STR_CMD_SET);
-	Serial.print(paramName);
-	Serial.print(paramValue);
-	Serial.print(CRLF);
+	PRINT(STR_CMD_SET);
+	PRINT(paramName);
+	PRINT(paramValue);
+	PRINT(CRLF);
 	#endif
 
 	return expectOK();
@@ -354,10 +358,10 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, uint8_t paramValue)
 // paramName should include the trailing space
 bool MicrochipLoRaModem::setMacParam(const char* paramName, const char* paramValue)
 {
-	//Serial.print("[setMacParam] ");
-	//Serial.print(paramName);
-	//Serial.print("= ");
-	//Serial.println(paramValue);
+	//PRINT("[setMacParam] ");
+	//PRINT(paramName);
+	//PRINT("= ");
+	//PRINTLN(paramValue);
 
 	_stream->print(STR_CMD_SET);
 	_stream->print(paramName);
@@ -365,10 +369,10 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const char* paramVal
 	_stream->print(CRLF);
 	
 	#ifdef FULLDEBUG
-	Serial.print(STR_CMD_SET);
-	Serial.print(paramName);
-	Serial.print(paramValue);
-	Serial.print(CRLF);
+	PRINT(STR_CMD_SET);
+	PRINT(paramName);
+	PRINT(paramValue);
+	PRINT(CRLF);
 	#endif
 	
 	return expectOK();
@@ -384,9 +388,9 @@ bool MicrochipLoRaModem::setMacParam(const char* paramName, const char* paramVal
 void MicrochipLoRaModem::printHex(unsigned char hex)
 {
   char hexTable[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-  Serial.print(hexTable[hex /16]);
-  Serial.print(hexTable[hex % 16]);
-  Serial.print(' ');
+  PRINT(hexTable[hex /16]);
+  PRINT(hexTable[hex % 16]);
+  PRINT(' ');
 }
 
 unsigned char MicrochipLoRaModem::onMacRX()
@@ -397,7 +401,7 @@ unsigned char MicrochipLoRaModem::onMacRX()
 
 	// sanity check
 	if (strcmp(token, STR_RESULT_MAC_RX) != 0){
-		Serial.println("no mac_rx found in result");
+		PRINTLN("no mac_rx found in result");
 		return NoResponse; // TODO create more appropriate error codes
 	}
 
@@ -462,8 +466,8 @@ int MicrochipLoRaModem::GetParam(instrumentationParam param)
 char* MicrochipLoRaModem::getMacParam(const char* paramName, unsigned short timeout)
 {
 	#ifdef FULLDEBUG	
-	Serial.print("[getMacParam] ");
-	Serial.print(paramName);
+	PRINT("[getMacParam] ");
+	PRINT(paramName);
 	#endif
 
 	_stream->print(STR_CMD_GET_MAC);
@@ -476,8 +480,8 @@ char* MicrochipLoRaModem::getMacParam(const char* paramName, unsigned short time
 		if (readLn() > 0)
 		{
 			#ifdef FULLDEBUG
-			Serial.print(" = ");
-			Serial.println(this->inputBuffer);
+			PRINT(" = ");
+			PRINTLN(this->inputBuffer);
 			#endif
 			return this->inputBuffer;
 		}
@@ -488,8 +492,8 @@ char* MicrochipLoRaModem::getMacParam(const char* paramName, unsigned short time
 char* MicrochipLoRaModem::getRadioParam(const char* paramName, unsigned short timeout)
 {
 	#ifdef FULLDEBUG	
-	Serial.print("[getRadioParam] ");
-	Serial.print(paramName);
+	PRINT("[getRadioParam] ");
+	PRINT(paramName);
 	#endif
 
 	_stream->print(STR_CMD_GET_RADIO);
@@ -502,8 +506,8 @@ char* MicrochipLoRaModem::getRadioParam(const char* paramName, unsigned short ti
 		if (readLn() > 0)
 		{
 			#ifdef FULLDEBUG
-			Serial.print(" = ");
-			Serial.println(this->inputBuffer);
+			PRINT(" = ");
+			PRINTLN(this->inputBuffer);
 			#endif
 			return this->inputBuffer;
 		}

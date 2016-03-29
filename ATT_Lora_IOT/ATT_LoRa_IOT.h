@@ -8,8 +8,9 @@ Original author: Jan Bogaerts (2015)
 #ifndef ATTDevice_h
 #define ATTDevice_h
 
-#include "Arduino.h"
+//#include "Arduino.h"
 #include <string.h>
+#include <Stream.h>
 
 #include <LoRaModem.h>
 #include <DataPacket.h>
@@ -49,7 +50,9 @@ class ATTDevice
 {
 	public:
 		//create the object
-		ATTDevice(LoRaModem* modem);
+		//modem: the object that respresents the modem that should be used.
+		//monitor: the stream used to write log lines to.
+		ATTDevice(LoRaModem* modem, Stream* monitor = NULL);
 		
 		/*connect with the http server (call first)
 		returns: true when subscribe was successful, otherwise false.*/
@@ -121,6 +124,7 @@ class ATTDevice
 		void SetMinTimeBetweenSend(short minTimeBetweenSend) { _minTimeBetweenSend = minTimeBetweenSend; };
 		
 	private:	
+		Stream *_monitor;
 		//builds the content that has to be sent to the cloud using mqtt (either a csv value or a json string)
 		DataPacket _data;
 		LoRaModem* _modem;

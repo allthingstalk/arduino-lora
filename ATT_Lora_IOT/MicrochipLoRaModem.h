@@ -34,7 +34,7 @@ class MicrochipLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
-		MicrochipLoRaModem(Stream* stream);
+		MicrochipLoRaModem(Stream* stream, Stream* monitor);
 		// Returns the required baudrate for the device
 		unsigned int getDefaultBaudRate();
 		//stop the modem.
@@ -62,6 +62,7 @@ class MicrochipLoRaModem: public LoRaModem
 		//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
 		int GetModemId();
 	private:
+		Stream *_monitor;
 		Stream* _stream;					//the stream to communicate with the lora modem.
 		char inputBuffer[DEFAULT_INPUT_BUFFER_SIZE + 1];
 	    char receivedPayloadBuffer[DEFAULT_RECEIVED_PAYLOAD_BUFFER_SIZE + 1];

@@ -17,7 +17,7 @@ class EmbitLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
-		EmbitLoRaModem(Stream* stream);
+		EmbitLoRaModem(Stream* stream, Stream* monitor);
 		// Returns the required baudrate for the device
 		unsigned int getDefaultBaudRate();
 		//stop the modem.
@@ -53,6 +53,7 @@ class EmbitLoRaModem: public LoRaModem
 		//reads a packet from the modem and returns the value of the byte at the specified index position
 		unsigned char ReadPacket(unsigned char index);
 		
+		Stream *_monitor;
 		Stream* _stream;					//the stream to communicate with the lora modem.
 };
 
