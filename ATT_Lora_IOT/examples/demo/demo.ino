@@ -24,8 +24,8 @@
 
 int DigitalSensor = 20;                              // pin this sensor is connected to
 //EmbitLoRaModem Modem(&Serial1);
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 bool sensorVal = false;
 bool prevButtonState = false;

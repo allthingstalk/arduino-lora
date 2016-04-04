@@ -26,8 +26,8 @@
 
 
 MMA7660 accelemeter;                                  // connect to the I2C port (SCL/SDA)
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 void setup() 
 {

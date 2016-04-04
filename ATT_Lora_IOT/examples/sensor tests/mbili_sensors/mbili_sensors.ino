@@ -21,8 +21,8 @@ Original author: Jan Bogaerts (2015)
 #define SERIAL_BAUD 57600
 
 //EmbitLoRaModem Modem(&Serial1);
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 
 

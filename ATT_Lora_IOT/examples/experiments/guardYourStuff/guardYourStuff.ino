@@ -35,8 +35,8 @@
 #define GPS_DATA_EVERY 15000                            // the amount of time between 2 consecutive GPS updates while moving
 long gpsLastSentAt = 0;                                 // keeps track of the last time that we sent over GPS coordinates
 
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 MMA7660 accelemeter;
 SoftwareSerial SoftSerial(20, 21);                      // reading GPS values from serial connection with GPS

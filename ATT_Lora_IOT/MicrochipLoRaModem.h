@@ -34,7 +34,7 @@ class MicrochipLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
-		MicrochipLoRaModem(Stream* stream, Stream* monitor);
+		MicrochipLoRaModem(Stream* stream, Stream* monitor = NULL);
 		// Returns the required baudrate for the device
 		unsigned int getDefaultBaudRate();
 		//stop the modem.

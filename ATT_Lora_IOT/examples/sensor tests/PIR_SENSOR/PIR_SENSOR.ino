@@ -25,8 +25,8 @@
 
 
 int DigitalSensor = 20;                                        // digital sensor is connected to pin D20/21 
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 
 void setup() 

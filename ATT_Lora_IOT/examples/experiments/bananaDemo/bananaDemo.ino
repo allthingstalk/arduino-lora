@@ -33,8 +33,8 @@
 
 int doorSensor = 4;
 
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 bool currentDoorValue;
 bool alertSent = false;

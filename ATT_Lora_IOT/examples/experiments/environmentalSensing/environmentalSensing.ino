@@ -37,8 +37,8 @@
 #define SEND_EVERY 20000
 
 
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 AirQuality2 airqualitysensor;
 
 float soundValue;

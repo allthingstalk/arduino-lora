@@ -36,8 +36,8 @@
 
 #define AnalogSensor A4
 
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 AirQuality2 airqualitysensor;
 short value;
 

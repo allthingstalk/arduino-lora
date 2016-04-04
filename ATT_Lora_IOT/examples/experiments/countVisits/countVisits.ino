@@ -33,8 +33,8 @@
 
 int pushButton = 20;          
 int doorSensor = 4;
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 #define SEND_MAX_EVERY 30000                                // the mimimum time between 2 consecutive updates of visit counts that are sent to the cloud (can be longer, if the value hasn't changed)
 

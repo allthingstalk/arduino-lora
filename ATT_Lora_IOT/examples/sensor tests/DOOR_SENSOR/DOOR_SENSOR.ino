@@ -24,8 +24,8 @@
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                               // digital sensor is connected to pin D20/D21
-MicrochipLoRaModem Modem(&Serial1);
-ATTDevice Device(&Modem);
+MicrochipLoRaModem Modem(&Serial1, &Serial);
+ATTDevice Device(&Modem, &Serial);
 
 
 void setup() 
