@@ -61,6 +61,8 @@ class MicrochipLoRaModem: public LoRaModem
 		int GetParam(instrumentationParam param);
 		//returns the id number of the modem type. See the container definition for the instrumentation container to see more details.
 		int GetModemId();
+		//prints all configuration params (radio and mac) to the monitor
+		void PrintModemConfig();
 	private:
 		Stream *_monitor;
 		Stream* _stream;					//the stream to communicate with the lora modem.
