@@ -32,6 +32,7 @@ ATTDevice Device(&Modem, &Serial);
 void setup() 
 {
   pinMode(AnalogSensor,INPUT);
+  while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
@@ -57,7 +58,7 @@ void SendValue()
 {
   Serial.print("Sending value: ");
   Serial.println(value);
-  Device.Send(value, LIGHT_SENSOR, false);
+  Device.Send(value, LIGHT_SENSOR);
 }
 
 

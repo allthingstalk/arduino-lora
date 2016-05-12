@@ -52,7 +52,7 @@ bool isConnected = false;                                   // Keeps track of th
 void setup() 
 {
   pinMode(doorSensor, INPUT);
-  
+  while((!Serial) && (millis()) < 2000){}					//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   
   Serial1.begin(Modem.getDefaultBaudRate());                // Init the baud rate of the serial connection so that it's ok for the modem
@@ -65,9 +65,8 @@ void setup()
   Serial.println("                          Banana Food Inc.");
   Serial.println("");
   
-  currentDoorValue = digitalRead(doorSensor);                  // Set the initial state
+  currentDoorValue = digitalRead(doorSensor);                 // Set the initial state
   
-  Device.SetMaxSendRetry(0);                                   // Set max retries for sending the packet to 0
   if(isConnected == false)                                    // Retry connecting LoRa communication
     tryConnect();
   delay(5000);
@@ -78,25 +77,25 @@ void setup()
 
 void loop() 
 {
-  if(isConnected == false)                                    // Retry connecting LoRa communication
+  if(isConnected == false)                                  // Retry connecting LoRa communication
     tryConnect();
 
  
-  readDoorSensor();    // Check status of container door
+  readDoorSensor();    										// Check status of container door
 
-  if(millis() - lastSent > 60000)     // Send a TPH value every 60 second
+  if(millis() - lastSent > 60000)     						// Send a TPH value every 60 second
   {
     lastSent = millis();
-    readTPHSensor();           // Check container environment values
+    readTPHSensor();           								// Check container environment values
     sendTPHSensor();
 
-    TPHState >= 2 ? TPHState = 0 : TPHState++;                // Loop through TPH sensors 0 = temperature, 1 = humidity, 2 = pressure
+    TPHState >= 2 ? TPHState = 0 : TPHState++;             	// Loop through TPH sensors 0 = temperature, 1 = humidity, 2 = pressure
     Serial.println("Waiting for next payload to be sent in approx 1 minute"); 
   }
 
   if(!currentDoorValue && !sentOnce)
   {
-    sendDoorSensor(true);    // Door is opened!
+    sendDoorSensor(true);    								// Door is opened!
     sentOnce = true;
   }
   
@@ -170,7 +169,7 @@ void sendDoorSensor(bool val)
 {
   if(val) Serial.println("** Alert: Container door is opened!");
   else Serial.println("** Container door is closed");
-  Device.Send(val, DOOR_SENSOR, false); 
+  Device.Send(val, DOOR_SENSOR); 
 }
 
 void sendTPHSensor()
@@ -178,17 +177,17 @@ void sendTPHSensor()
   if(TPHState == 0)
   {
     Serial.println("Sending TPH Temperature value");
-    Device.Send(temp, TEMPERATURE_SENSOR, false);
+    Device.Send(temp, TEMPERATURE_SENSOR);
   }
   else if(TPHState == 1)
   {
     Serial.println("Sending TPH Humidity value");
-    Device.Send(hum, HUMIDITY_SENSOR, false);
+    Device.Send(hum, HUMIDITY_SENSOR);
   }
   else if(TPHState == 2)
   {
     Serial.println("Sending TPH Pressure value");
-    Device.Send(pres, PRESSURE_SENSOR, false);
+    Device.Send(pres, PRESSURE_SENSOR);
   }
 }
 

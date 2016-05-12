@@ -103,8 +103,8 @@ bool MicrochipLoRaModem::Send(LoRaPacket* packet, bool ack)
 		
 	unsigned char result;
 	if(ack == true){
-		if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
-			PRINTLN("[send] Non-fatal error: setting number of retries failed.");
+		//if (!setMacParam(STR_RETRIES, MAX_SEND_RETRIES))		// not a fatal error -just show a debug message
+		//	PRINTLN("[send] Non-fatal error: setting number of retries failed.");
 		result = macTransmit(STR_CONFIRMED, microchipSendBuffer, length) == NoError;
 	}
 	else{

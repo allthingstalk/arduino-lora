@@ -31,9 +31,10 @@ ATTDevice Device(&Modem, &Serial);
 
 void setup() 
 {
-  pinMode(DigitalSensor, INPUT);                      // initialize the digital pin as an input.          
+  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
+  pinMode(DigitalSensor, INPUT);                      	// initialize the digital pin as an input.          
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());          // init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());          	// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
@@ -58,7 +59,7 @@ void loop()
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PIR_SENSOR, false);
+  Device.Send(val, PIR_SENSOR);
 }
 
 

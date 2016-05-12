@@ -16,7 +16,7 @@
  *  
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <ATT_LoRa_IOT.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
@@ -24,37 +24,45 @@
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                                        // digital sensor is connected to pin D20/21
-MicrochipLoRaModem Modem(&Serial1, &Serial);
-ATTDevice Device(&Modem, &Serial);
+MicrochipLoRaModem Modem(&Serial1, &SerialUSB);
+ATTDevice Device(&Modem, &SerialUSB);
 
 
 void setup() 
 {
-  pinMode(DigitalSensor, INPUT);					            // initialize the digital pin as an input.          
+  //pinMode(DigitalSensor, INPUT);					            // initialize the digital pin as an input.          
+  digitalWrite(ENABLE_PIN_IO, HIGH);
+  delay(3000);
   while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
-  Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   
-  Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
-  Serial.println("Ready to send data");
+  SerialUSB.begin(SERIAL_BAUD);
+  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
+
+  
+  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY));
+  SerialUSB.println("Ready to send data");
+
+  Modem.PrintModemConfig();
 }
 
 bool sensorVal = true;
 
 void loop() 
 {
-	bool sensorRead = digitalRead(DigitalSensor);		    // read status Digital Sensor
-	if (sensorVal != sensorRead) 				                // verify if value has changed
-	{
-		sensorVal = sensorRead;
-		SendValue(sensorRead);
-	}
-	delay(100);
+  //bool sensorRead = digitalRead(DigitalSensor);		    // read status Digital Sensor
+  //if (sensorVal != sensorRead) 				                // verify if value has changed
+  //{
+     //sensorVal = sensorRead;
+	   SendValue(sensorVal);
+	   sensorVal = !sensorVal;
+	   
+  //}
+  delay(2000);
 }
 
 void SendValue(bool val)
 {
-  Serial.println(val);
+  SerialUSB.println(val);
   Device.Send(val, PUSH_BUTTON);
 }
 

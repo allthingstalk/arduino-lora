@@ -32,37 +32,36 @@ bool prevButtonState = false;
 
 void setup() 
 {
-  pinMode(DigitalSensor, INPUT);               // initialize the digital pin as an input
-  Serial.begin(SERIAL_BAUD);                   // set baud rate of the default serial debug connection
-  Serial1.begin(Modem.getDefaultBaudRate());   // set baud rate of the serial connection between Mbili and LoRa modem
+  pinMode(DigitalSensor, INPUT);               			// initialize the digital pin as an input
+  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
+  Serial.begin(SERIAL_BAUD);                   			// set baud rate of the default serial debug connection
+  Serial1.begin(Modem.getDefaultBaudRate());   			// set baud rate of the serial connection between Mbili and LoRa modem
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
 	Serial.println("retrying...");						// initialize connection with the AllThingsTalk Developer Cloud
-  Device.SetMaxSendRetry(0);
-  Device.SetMinTimeBetweenSend(0);
+  //Device.SetMinTimeBetweenSend(1000);					//uncomment this line if the device has to block when messages are sent too quickly, default = 0
   Serial.println("Ready to send data");
 
   sensorVal = digitalRead(DigitalSensor);
-  SendValue(sensorVal);                        // send initial state
+  SendValue(sensorVal);                        			// send initial state
 }
 
 void loop() 
 {
-  bool sensorRead = digitalRead(DigitalSensor);      // read status Digital Sensor
-  if (sensorRead == 1 && prevButtonState == false)                               // verify if value has changed
-  {
-    prevButtonState = true;
-    if(SendValue(!sensorVal) == true)
-		  sensorVal = !sensorVal;
-  }
-  else if(sensorRead == 0)
-    prevButtonState = false;
-  delay(100);
+	bool sensorRead = digitalRead(DigitalSensor);      	// read status Digital Sensor
+	if (sensorRead == 1 && prevButtonState == false)      // verify if value has changed
+	{
+		prevButtonState = true;
+		if(SendValue(!sensorVal) == true)
+			sensorVal = !sensorVal;
+	}
+	else if(sensorRead == 0)
+		prevButtonState = false;
 }
 
 bool SendValue(bool val)
 {
   Serial.print("Data: ");Serial.println(val);
-  bool res = Device.Send(val, BINARY_SENSOR, false);
+  bool res = Device.Send(val, BINARY_SENSOR);
   if(res == false)
     Serial.println("maybe the last couple of packages were sent too quickly after each other? (min of 15 seconds recommended)");
   return res;

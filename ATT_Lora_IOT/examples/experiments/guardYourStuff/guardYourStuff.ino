@@ -59,6 +59,7 @@ void setup()
 {
   accelemeter.init();                                   // accelerometer is always running so we can check when the object is moving around or not
   SoftSerial.begin(9600); 
+  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());            // init the baud rate of the serial connection so that it's ok for the modem
 
@@ -77,7 +78,6 @@ void setup()
   }
   accelemeter.getXYZ(&prevX, &prevY, &prevZ);          // get the current state of the accelerometer so we can use this info in the loop as something to compare against
   Serial.println("Sending initial state");
-  Device.SetMaxSendRetry(2);
   Device.Send(false, BINARY_SENSOR);
   Serial.println("Ready to guard your stuff");
   Serial.println();
@@ -169,7 +169,7 @@ void SendCoordinates()
   Device.Queue(longitude);
   Device.Queue(altitude);
   Device.Queue(timestamp);
-  Device.Send(GPS, false);
+  Device.Send(GPS);
   Serial.print("lng: ");
   Serial.print(longitude, 4);
   Serial.print(", lat: ");

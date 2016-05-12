@@ -32,9 +32,10 @@ ATTDevice Device(&Modem, &Serial);
 
 void setup() 
 {
-  tph.begin();                                        // connect TPH sensor to the I2C pin (SCL/SDA)
+  tph.begin();                                        		// connect TPH sensor to the I2C pin (SCL/SDA)
+  while((!Serial) && (millis()) < 2000){}					//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());				// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");  
 }
@@ -68,9 +69,9 @@ void loop()
   Serial.println(" hPa");
   Serial.println();
 
-  Device.Send(temp, TEMPERATURE_SENSOR, false);
-  Device.Send(hum, HUMIDITY_SENSOR, false);
-  Device.Send(pres, PRESSURE_SENSOR, false);
+  Device.Send(temp, TEMPERATURE_SENSOR);
+  Device.Send(hum, HUMIDITY_SENSOR);
+  Device.Send(pres, PRESSURE_SENSOR);
   
   delay(3000);
 }

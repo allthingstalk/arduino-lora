@@ -32,8 +32,9 @@ ATTDevice Device(&Modem, &Serial);
 void setup() 
 {
   accelemeter.init();
+  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
+  Serial1.begin(Modem.getDefaultBaudRate());			// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
   Serial.println("Ready to send data");
 }
@@ -75,7 +76,7 @@ void SendValue()
   Device.Queue(accx);
   Device.Queue(accy);
   Device.Queue(accz);
-  Device.Send(ACCELEROMETER, false);
+  Device.Send(ACCELEROMETER);
 }
 
 

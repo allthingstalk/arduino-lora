@@ -49,7 +49,7 @@ void setup()
 {
   pinMode(pushButton, INPUT);                               // initialize the digital pin as an input.          
   pinMode(doorSensor, INPUT);
-  
+  while((!Serial) && (millis()) < 2000){}					//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());                // init the baud rate of the serial connection so that it's ok for the modem
 
@@ -59,7 +59,6 @@ void setup()
   prevButtonState = digitalRead(pushButton);                // set the initial state
   prevDoorSensor = digitalRead(doorSensor);                 // set the initial state
   
-  Device.SetMaxSendRetry(5);                                // set max retries for sending the packet to 5
 }
 
 void tryConnect()
@@ -89,7 +88,7 @@ void loop()
 void sendVisitCount()
 {
   Serial.print("Send visit count: ");Serial.println(visitCount);
-  Device.Send(visitCount, INTEGER_SENSOR, false);                 // always send visit count to keep the cloud in sync with the device
+  Device.Send(visitCount, INTEGER_SENSOR);                 // always send visit count to keep the cloud in sync with the device
   prevVisitCountSent = visitCount;
   lastSentAt = millis();
 }

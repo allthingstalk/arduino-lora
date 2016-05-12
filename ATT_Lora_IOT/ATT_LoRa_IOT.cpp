@@ -8,7 +8,7 @@
 
 
 //create the object
-ATTDevice::ATTDevice(LoRaModem* modem, Stream* monitor): _maxRetries(SEND_MAX_RETRY),  _minTimeBetweenSend(MIN_TIME_BETWEEN_SEND)
+ATTDevice::ATTDevice(LoRaModem* modem, Stream* monitor):  _minTimeBetweenSend(MIN_TIME_BETWEEN_SEND)
 {
 	_modem = modem;
 	 _monitor = monitor;
@@ -18,13 +18,14 @@ ATTDevice::ATTDevice(LoRaModem* modem, Stream* monitor): _maxRetries(SEND_MAX_RE
 //connect with the to the lora gateway
 bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr)
 {
+	PRINT("ATT lib version: "); PRINTLN(VERSION);
 	if(!_modem->Stop()){								//stop any previously running modems
 		PRINTLN("can't communicate with modem: possible hardware issues");
 		return false;
 	}
 	
 	if (!_modem->SetLoRaWan(adr)){						//switch to LoRaWan mode instead of peer to peer				
-		PRINTLN("can't switch modem to lorawan mode: possible hardware issues?");
+		PRINTLN("can't set adr: possible hardware issues?");
 		return false;
 	}
 	if(!_modem->SetDevAddress(devAddress)){
@@ -41,10 +42,10 @@ bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsign
 	}
 	bool result = _modem->Start();								//start the modem up 
 	if(result == true){
-		PRINTLN("modem initialized, communication with base station established");
+		PRINTLN("modem initialized");
 	}
 	else{
-		PRINTLN("Modem is responding, but failed to communicate with base station. Possibly out of reach or invalid credentials.");
+		PRINTLN("Parameters loaded, but modem won't start: initialization failed");
 	}
 	return result;									//we have created a connection successfully.
 }
@@ -165,19 +166,9 @@ bool ATTDevice::Send(LoRaPacket* data, bool ack)
 	{
 		PRINT("adhering to LoRa bandwith usage, delaying next message for ");
 		PRINT((_minTimeBetweenSend + _lastTimeSent - curTime)/1000); PRINTLN(" seconds");
-		//PRINT("curTime = "); PRINT(curTime); PRINT(", prevTime = "); PRINT(_lastTimeSent); PRINT(", dif = ");
-		//PRINTLN(_minTimeBetweenSend + _lastTimeSent - curTime);
 		delay(_minTimeBetweenSend + _lastTimeSent - curTime);
 	}
 	bool res = _modem->Send(data, ack);
-	while(res == false && (nrRetries < _maxRetries || _maxRetries == -1)) 
-	{
-		nrRetries++;
-		PRINT("retry in "); PRINT(_minTimeBetweenSend/1000); PRINTLN(" seconds");
-		delay(_minTimeBetweenSend);
-		PRINTLN("resending");
-		res = _modem->Send(data, ack);
-	}
 	data->Reset();				//make certain packet doesn't contain any values any more for the next run. This allows us to easily build up partials as well
 	_lastTimeSent = millis();
 	return res;
