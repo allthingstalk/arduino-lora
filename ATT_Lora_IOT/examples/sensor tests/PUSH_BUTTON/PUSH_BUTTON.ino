@@ -31,7 +31,7 @@ ATTDevice Device(&Modem, &Serial);
 void setup() 
 {
   pinMode(DigitalSensor, INPUT);					            // initialize the digital pin as an input.          
-  
+  while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   
@@ -43,19 +43,19 @@ bool sensorVal = true;
 
 void loop() 
 {
-  bool sensorRead = digitalRead(DigitalSensor);		    // read status Digital Sensor
-  if (sensorVal != sensorRead) 				                // verify if value has changed
-  {
-     sensorVal = sensorRead;
-	   SendValue(sensorRead);
-  }
-  delay(100);
+	bool sensorRead = digitalRead(DigitalSensor);		    // read status Digital Sensor
+	if (sensorVal != sensorRead) 				                // verify if value has changed
+	{
+		sensorVal = sensorRead;
+		SendValue(sensorRead);
+	}
+	delay(100);
 }
 
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PUSH_BUTTON, false);
+  Device.Send(val, PUSH_BUTTON);
 }
 
 

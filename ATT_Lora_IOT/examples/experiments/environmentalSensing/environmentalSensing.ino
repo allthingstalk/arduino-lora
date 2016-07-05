@@ -52,7 +52,7 @@ void setup()
 {
   pinMode(GROVEPWR, OUTPUT);                                    // turn on the power for the secondary row of grove connectors.
   digitalWrite(GROVEPWR, HIGH);
-
+  while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());                    // init the baud rate of the serial connection so that it's ok for the modem
   
@@ -65,8 +65,7 @@ void setup()
     Serial.println("Retrying...");
     delay(200);
   }
-  Device.SetMaxSendRetry(1);                                    // just try to send data 1 time, if it fails, just go to the next data item.  if the data must arrive in the cloud before continuing, use -1, to indicate that data has to be successfully sent before moving on to the next item
-  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly.
+  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly, default = 0.
   initSensors();
 }
 
@@ -112,17 +111,17 @@ void SendSensorValues()
     Serial.println("Start uploading data to the ATT cloud Platform");
     Serial.println("----------------------------------------------");
     Serial.println("Sending sound value... ");
-    Device.Send(soundValue, LOUDNESS_SENSOR, false);
+    Device.Send(soundValue, LOUDNESS_SENSOR);
     Serial.println("Sending light value... "); 
-    Device.Send(lightValue, LIGHT_SENSOR, false);
+    Device.Send(lightValue, LIGHT_SENSOR);
     Serial.println("Sending temperature value... ");
-    Device.Send(temp, TEMPERATURE_SENSOR, false);
+    Device.Send(temp, TEMPERATURE_SENSOR);
     Serial.println("Sending humidity value... ");  
-    Device.Send(hum, HUMIDITY_SENSOR, false);
+    Device.Send(hum, HUMIDITY_SENSOR);
     Serial.println("Sending pressure value... ");  
-    Device.Send(pres, PRESSURE_SENSOR, false);
+    Device.Send(pres, PRESSURE_SENSOR);
     Serial.println("Sending air quality value... ");  
-    Device.Send(airValue, AIR_QUALITY_SENSOR, false);
+    Device.Send(airValue, AIR_QUALITY_SENSOR);
 }
 
 void DisplaySensorValues()
