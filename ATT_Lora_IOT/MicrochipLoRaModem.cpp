@@ -722,7 +722,7 @@ int MicrochipLoRaModem::sfToIndex(char* value)
 	int len = strlen(value);
 	if(len == 3){
 		int res = value[2] - 54;     			//48 = ascii 0,  ascii 55 = 7 -> transaltes to index 0x01
-		if (res >= 1 && res < 3) return res;	//small sanity check, make certain that it is within the expected range
+		if (res >= 1 && res < 4) return res;	//small sanity check, make certain that it is within the expected range
 	}
 	else if(len == 4){
 		int res = value[3] - 47 + 3;
