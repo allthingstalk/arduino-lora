@@ -21,7 +21,7 @@ typedef struct StringEnumPair
 
 unsigned char microchipSendBuffer[DEFAULT_PAYLOAD_SIZE];
 
-MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream, Stream *monitor)
+MicrochipLoRaModem::MicrochipLoRaModem(SerialType* stream, Stream *monitor)
 {
 	_stream = stream;
 	_monitor = monitor;
@@ -50,7 +50,7 @@ unsigned int MicrochipLoRaModem::getDefaultBaudRate()
 	return 57600; 
 };
 
-bool MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
+bool MicrochipLoRaModem::SetDevAddress(const unsigned char* devAddress)
 {
 #ifdef FULLDEBUG
 	PRINTLN("Setting the DevAddr");
@@ -58,7 +58,7 @@ bool MicrochipLoRaModem::SetDevAddress(unsigned char* devAddress)
 	return setMacParam(STR_DEV_ADDR, devAddress, 4); 
 }
 
-bool MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
+bool MicrochipLoRaModem::SetAppKey(const unsigned char* appKey)
 {
 	#ifdef FULLDEBUG
 	PRINTLN("Setting the AppSKey"); 
@@ -66,7 +66,7 @@ bool MicrochipLoRaModem::SetAppKey(unsigned char* appKey)
 	return setMacParam(STR_APP_SESSION_KEY, appKey, 16);
 }
 
-bool MicrochipLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
+bool MicrochipLoRaModem::SetNWKSKey(const unsigned char*  nwksKey)
 {
 	#ifdef FULLDEBUG
 	PRINTLN("Setting the NwkSKey"); 
@@ -91,6 +91,39 @@ bool MicrochipLoRaModem::Start()
 
 	return expectOK() && expectString(STR_ACCEPTED);
 }
+
+#ifdef ENABLE_SLEEP
+void MicrochipLoRaModem::Sleep()
+{
+	#ifdef FULLDEBUG
+	PRINTLN("putting the modem into sleep mode");
+	#endif		
+	_stream->print(STR_CMD_SLEEP);
+	_stream->print(CRLF);
+
+	#ifdef FULLDEBUG	
+	PRINT(STR_CMD_SLEEP);
+	PRINT(CRLF);
+	#endif
+}
+
+
+void MicrochipLoRaModem::WakeUp()
+{
+	// "emulate" break condition
+    _stream->flush();
+    _stream->end();
+    _stream->begin(300);
+    _stream->write((uint8_t)0x00);
+    _stream->flush();
+    _stream->end();
+
+    // set baudrate
+    _stream->begin(getDefaultBaudRate());
+    _stream->write((uint8_t)0x55);
+    _stream->flush();
+}
+#endif
 
 bool MicrochipLoRaModem::Send(LoRaPacket* packet, bool ack)
 {

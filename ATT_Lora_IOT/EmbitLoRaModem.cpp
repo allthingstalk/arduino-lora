@@ -52,21 +52,21 @@ bool EmbitLoRaModem::SetLoRaWan(bool adr)
 	return ReadPacket();
 }
 
-bool EmbitLoRaModem::SetDevAddress(unsigned char* devAddress)
+bool EmbitLoRaModem::SetDevAddress(const unsigned char* devAddress)
 {
 	PRINTLN("Setting the DevAddr");
 	SendPacket(CMD_DEV_ADDR, sizeof(CMD_DEV_ADDR), devAddress, 4); 
 	return ReadPacket();
 }
 
-bool EmbitLoRaModem::SetAppKey(unsigned char* appKey)
+bool EmbitLoRaModem::SetAppKey(const unsigned char* appKey)
 {
 	PRINTLN("Setting the AppSKey");   
 	SendPacket(CMD_APPSKEY, sizeof(CMD_APPSKEY), appKey, 16);
 	return ReadPacket();
 }
 
-bool EmbitLoRaModem::SetNWKSKey(unsigned char*  nwksKey)
+bool EmbitLoRaModem::SetNWKSKey(const unsigned char*  nwksKey)
 {
 	PRINTLN("Setting the NwkSKey");
 	SendPacket(CMD_NWKSKEY, sizeof(CMD_NWKSKEY), nwksKey, 16);
@@ -93,9 +93,9 @@ bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 	PRINTLN();
   
 	if(ack == true)
-		SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), sendBuffer, length);
+		SendPacket(CMD_SEND_PREFIX, sizeof(CMD_SEND_PREFIX), (const unsigned char*)sendBuffer, length);
 	else
-		SendPacket(CMD_SEND_PREFIX_NO_ACK, sizeof(CMD_SEND_PREFIX_NO_ACK), sendBuffer, length);
+		SendPacket(CMD_SEND_PREFIX_NO_ACK, sizeof(CMD_SEND_PREFIX_NO_ACK), (const unsigned char*)sendBuffer, length);
 	unsigned char result = ReadPacket(3);
 	if(result != 0){
 		PRINTLN("Failed to send packet");
@@ -106,7 +106,7 @@ bool EmbitLoRaModem::Send(LoRaPacket* packet, bool ack)
 	
 }
 
-void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length)
+void EmbitLoRaModem::SendPacket(const unsigned char* data, uint16_t length)
 {
 	PRINT("Sending: ");
 	uint16_t packetLength = length + 3;
@@ -126,7 +126,7 @@ void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length)
 	PRINTLN();
 }
 
-void EmbitLoRaModem::SendPacket(unsigned char* data, uint16_t length, unsigned char* data2, uint16_t length2)
+void EmbitLoRaModem::SendPacket(const unsigned char* data, uint16_t length, const unsigned char* data2, uint16_t length2)
 {
 	PRINT("Sending: ");
 	uint16_t packetLength = length + length2 + 3;

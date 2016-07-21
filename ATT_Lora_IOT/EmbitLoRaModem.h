@@ -27,13 +27,13 @@ class EmbitLoRaModem: public LoRaModem
 		bool SetLoRaWan(bool adr = true);
 		//assign a device address to the modem
 		//devAddress must be 4 bytes long
-		bool SetDevAddress(unsigned char* devAddress);
+		bool SetDevAddress(const unsigned char* devAddress);
 		//set the app session key for the modem communication
 		//app session key must be 16 bytes long
-		bool SetAppKey(unsigned char* appKey);
+		bool SetAppKey(const unsigned char* appKey);
 		//set the network session key
 		//network session key must be 16 bytes long
-		bool SetNWKSKey(unsigned char*  nwksKey);
+		bool SetNWKSKey(const unsigned char*  nwksKey);
 		//start the modem , returns true if successful
 		bool Start();
 		//send a data packet to the server
@@ -47,8 +47,8 @@ class EmbitLoRaModem: public LoRaModem
 	private:
 		void printHex(unsigned char hex);
 		void sendByte(unsigned char data);
-		void SendPacket(unsigned char* data, uint16_t length);
-		void SendPacket(unsigned char* data, uint16_t length, unsigned char* data2, uint16_t length2);
+		void SendPacket(const unsigned char* data, uint16_t length);
+		void SendPacket(const unsigned char* data, uint16_t length, const unsigned char* data2, uint16_t length2);
 		bool ReadPacket();
 		//reads a packet from the modem and returns the value of the byte at the specified index position
 		unsigned char ReadPacket(unsigned char index);

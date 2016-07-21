@@ -16,7 +16,7 @@ ATTDevice::ATTDevice(LoRaModem* modem, Stream* monitor):  _minTimeBetweenSend(MI
 }
 
 //connect with the to the lora gateway
-bool ATTDevice::Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr)
+bool ATTDevice::Connect(const uint8_t* devAddress, const uint8_t* appKey, const uint8_t* nwksKey, bool adr)
 {
 	PRINT("ATT lib version: "); PRINTLN(VERSION);
 	if(!_modem->Stop()){								//stop any previously running modems

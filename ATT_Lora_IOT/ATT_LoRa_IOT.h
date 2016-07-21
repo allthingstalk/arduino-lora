@@ -56,7 +56,7 @@ class ATTDevice
 		
 		/*connect with the http server (call first)
 		returns: true when subscribe was successful, otherwise false.*/
-		bool Connect(unsigned char* devAddress, unsigned char* appKey, unsigned char*  nwksKey, bool adr = true);
+		bool Connect(const uint8_t* devAddress, const uint8_t* appKey, const uint8_t*  nwksKey, bool adr = true);
 		
 		//create or update the specified asset. (call after connecting)
 		//note: after this call, the name will be in lower case, so that it can be used to compare with the topic of incomming messages.
@@ -115,7 +115,7 @@ class ATTDevice
 		
 		
 		//set the minimum amount of time between 2 consecutive messages that are sent to the cloud.
-		//default value: 15 seconds.
+		//default value: 0 seconds.
 		//minTimeBetweenSend: the nr of milli seconds that should be between 2 data packets.
 		void SetMinTimeBetweenSend(short minTimeBetweenSend) { _minTimeBetweenSend = minTimeBetweenSend; };
 		

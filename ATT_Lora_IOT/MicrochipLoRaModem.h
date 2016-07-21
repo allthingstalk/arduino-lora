@@ -11,6 +11,11 @@ Original author: Jan Bogaerts (2015)
 #include <LoRaModem.h>
 #include <LoRaPacket.h>
 #include <instrumentationParamEnum.h>
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include "arduino.h"
+#else
+  #include "WProgram.h"
+#endif
 
 #define DEFAULT_PAYLOAD_SIZE 52
 #define PORT 1
@@ -20,6 +25,16 @@ Original author: Jan Bogaerts (2015)
 #define RECEIVE_TIMEOUT 60000
 #define MAX_SEND_RETRIES 10
 
+
+#if defined(ARDUINO_ARCH_AVR)
+typedef HardwareSerial SerialType;
+#define ENABLE_SLEEP
+#elif defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+typedef Uart SerialType;
+#define ENABLE_SLEEP
+#else
+typedef Stream SerialType;
+#endif
 
 enum MacTransmitErrorCodes
 {
@@ -34,7 +49,7 @@ class MicrochipLoRaModem: public LoRaModem
 {
 	public:
 		//create the object
-		MicrochipLoRaModem(Stream* stream, Stream* monitor = NULL);
+		MicrochipLoRaModem(SerialType* stream, Stream* monitor = NULL);
 		// Returns the required baudrate for the device
 		unsigned int getDefaultBaudRate();
 		//stop the modem.
@@ -44,13 +59,13 @@ class MicrochipLoRaModem: public LoRaModem
 		bool SetLoRaWan(bool adr = true);
 		//assign a device address to the modem
 		//devAddress must be 4 bytes long
-		bool SetDevAddress(unsigned char* devAddress);
+		bool SetDevAddress(const unsigned char* devAddress);
 		//set the app session key for the modem communication
 		//app session key must be 16 bytes long
-		bool SetAppKey(unsigned char* appKey);
+		bool SetAppKey(const unsigned char* appKey);
 		//set the network session key
 		//network session key must be 16 bytes long
-		bool SetNWKSKey(unsigned char*  nwksKey);
+		bool SetNWKSKey(const unsigned char*  nwksKey);
 		//start the modem , returns true if successful
 		bool Start();
 		//send a data packet to the server
@@ -63,9 +78,15 @@ class MicrochipLoRaModem: public LoRaModem
 		int GetModemId();
 		//prints all configuration params (radio and mac) to the monitor
 		void PrintModemConfig();
+		#ifdef ENABLE_SLEEP
+		//put the modem in sleep mode for 3 days (use WakeUp if you want to send something earlier)
+		void Sleep();
+		//wakes up the device after it has been put the sleep.
+		void WakeUp();
+		#endif
 	private:
 		Stream *_monitor;
-		Stream* _stream;					//the stream to communicate with the lora modem.
+		SerialType* _stream;					//the stream to communicate with the lora modem.
 		char inputBuffer[DEFAULT_INPUT_BUFFER_SIZE + 1];
 	    char receivedPayloadBuffer[DEFAULT_RECEIVED_PAYLOAD_BUFFER_SIZE + 1];
 		unsigned char lookupMacTransmitError(const char* error);
