@@ -68,9 +68,9 @@ void loop()
   Serial.println(" hPa");
   Serial.println();
 
-  Device.Send(temp, TEMPERATURE_SENSOR, false);
-  Device.Send(hum, HUMIDITY_SENSOR, false);
-  Device.Send(pres, PRESSURE_SENSOR, false);
+  Device.Send(temp, TEMPERATURE_SENSOR);
+  Device.Send(hum, HUMIDITY_SENSOR);
+  Device.Send(pres, PRESSURE_SENSOR);
   
   delay(3000);
 }

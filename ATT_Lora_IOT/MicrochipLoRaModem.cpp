@@ -21,7 +21,7 @@ typedef struct StringEnumPair
 
 unsigned char microchipSendBuffer[DEFAULT_PAYLOAD_SIZE];
 
-MicrochipLoRaModem::MicrochipLoRaModem(Stream* stream, Stream *monitor)
+MicrochipLoRaModem::MicrochipLoRaModem(SerialType* stream, Stream *monitor)
 {
 	_stream = stream;
 	_monitor = monitor;
@@ -36,7 +36,35 @@ bool MicrochipLoRaModem::Stop()
 	_stream->print(STR_CMD_RESET);
 	_stream->print(CRLF);
 
-	return expectString(STR_DEVICE_TYPE);
+	if(!expectString(STR_DEVICE_TYPE)){
+		#ifdef FULLDEBUG
+			PRINTLN("initial reset failed, starting wakeup sequence");
+		#endif
+		WakeUp();										//try to wakeup the modem and send the messages again. sometimes the modem is just not correctly woken up after a new sketch was loaded
+		#ifdef FULLDEBUG
+			PRINTLN("retrying reset");
+		#endif
+		_stream->print(STR_CMD_RESET);
+		_stream->print(CRLF);
+		return expectString(STR_DEVICE_TYPE);
+	}
+	return true;
+}
+
+void MicrochipLoRaModem::WakeUp()
+{
+	// "emulate" break condition
+    _stream->flush();
+    _stream->end();
+    _stream->begin(300);
+    _stream->write((uint8_t)0x00);
+    _stream->flush();
+    _stream->end();
+
+    // set baudrate
+    _stream->begin(getDefaultBaudRate());
+    _stream->write((uint8_t)0x55);
+    _stream->flush();
 }
 
 bool MicrochipLoRaModem::SetLoRaWan(bool adr)
