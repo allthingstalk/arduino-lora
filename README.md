@@ -7,7 +7,7 @@ This library has been developed for the folowing hardware:
 - [sodaq mbili](http://mbili.sodaq.net/) (other arduino devices should be compatible)
 - LoRa modems:
 	- [Microchip](http://www.microchip.com/wwwproducts/Devices.aspx?product=RN2483)
-	- [Embit](http://www.embit.eu/products/wireless-modules/emb-lr1272/)
+	- [Embit](http://www.embit.eu/products/wireless-modules/emb-lr1272/) (partially)
 	- other to come shortly
 
 ### Installation
@@ -21,12 +21,12 @@ Some sensors require a 3th party library. For ease of use, we have included a wo
 
 * [AirQuality2](https://github.com/MikeHg/AirQualitySensor/tree/d6cadaf21c6beae99fdd65bb037424ce6f855db1)
 * [MMA7660 (Accelerometer)](http://www.seeedstudio.com/wiki/Grove_-_3-Axis_Digital_Accelerometer(%C2%B11.5g))
-* [TPH](https://github.com/SodaqMoja/Sodaq_TPH/tree/e83e52e1a0dfb16b91e035149d6bdd047cfbe444) Sodaq_SHT2x library
+* [TPH2](http://support.sodaq.com/sodaq-one/tph-v2/) Note: this library is not included in the download and must be installed from the ide, follow the previous link for more info)
 
 ### Experiments
 
 The download also includes a number of experiments to get you started with more features of  the AllThingsTalk ‘Internet of Things’ platform such as automation and notifications.
 
 Want more information ?  
-Check out the [documentation](http://docs.smartliving.io/kits/lora/).
+Check out the [documentation](http://docs.allthingstalk.io/kits/lora/).
 
