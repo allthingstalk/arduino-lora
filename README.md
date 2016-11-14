@@ -28,5 +28,5 @@ Some sensors require a 3th party library. For ease of use, we have included a wo
 The download also includes a number of experiments to get you started with more features of  the AllThingsTalk ‘Internet of Things’ platform such as automation and notifications.
 
 Want more information ?  
-Check out the [documentation](http://docs.allthingstalk.io/kits/lora/).
+Check out the [documentation](http://allthingstalk.com/docs/tutorials/lora/setup).
 
