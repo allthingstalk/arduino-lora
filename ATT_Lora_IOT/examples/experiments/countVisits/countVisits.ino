@@ -88,17 +88,6 @@ void tryConnect()
 }
 
 
-void loop() 
-{
-  if(isConnected == false)                                  // retry connecting if needed while already counting visits locally
-    tryConnect();
-  processButton();
-  processDoorSensor();
-  delay(100);
-  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())	// only send a message when something has changed and SEND_MAX_EVERY has been exceeded
-    sendVisitCount();
-}
-
 void sendVisitCount()
 {
   Serial.print("Send visit count: ");Serial.println(visitCount);
@@ -153,4 +142,15 @@ void serialEvent1()
   Device.Process();                                     // for future extensions -> actuators
 }
 
+
+void loop() 
+{
+  if(isConnected == false)                                  // retry connecting if needed while already counting visits locally
+    tryConnect();
+  processButton();
+  processDoorSensor();
+  delay(100);
+  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())	// only send a message when something has changed and SEND_MAX_EVERY has been exceeded
+    sendVisitCount();
+}
 

@@ -62,37 +62,7 @@ float hum;
 float pres;
 short airValue;
 
-void setup() 
-{
-  pinMode(GROVEPWR, OUTPUT);                                    // turn on the power for the secondary row of grove connectors.
-  digitalWrite(GROVEPWR, HIGH);
-  while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
-  Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());                    // init the baud rate of the serial connection so that it's ok for the modem
-  
-  Serial.println("-- Environmental Sensing LoRa experiment --");
-  Serial.print("Sending data each ");Serial.print(SEND_EVERY);Serial.println(" milliseconds");
 
-  Serial.println("Initializing modem");
-  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))            // there is no point to continue if we can't connect to the cloud: this device's main purpose is to send data to the cloud.
-  {
-    Serial.println("Retrying...");
-    delay(200);
-  }
-  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly, default = 0.
-  initSensors();
-}
-
-void loop() 
-{
-  ReadSensors();
-  DisplaySensorValues();
-  SendSensorValues();
-  Serial.print("Delay for: ");
-  Serial.println(SEND_EVERY);
-  Serial.println();
-  delay(SEND_EVERY);
-}
 
 void initSensors()
 {
@@ -171,4 +141,35 @@ void serialEvent1()
     Device.Process();                           //for future use of actuators
 }
 
+void setup() 
+{
+  pinMode(GROVEPWR, OUTPUT);                                    // turn on the power for the secondary row of grove connectors.
+  digitalWrite(GROVEPWR, HIGH);
+  while((!Serial) && (millis()) < 2000){}						//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
+  Serial.begin(SERIAL_BAUD);
+  Serial1.begin(Modem.getDefaultBaudRate());                    // init the baud rate of the serial connection so that it's ok for the modem
+  
+  Serial.println("-- Environmental Sensing LoRa experiment --");
+  Serial.print("Sending data each ");Serial.print(SEND_EVERY);Serial.println(" milliseconds");
+
+  Serial.println("Initializing modem");
+  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))            // there is no point to continue if we can't connect to the cloud: this device's main purpose is to send data to the cloud.
+  {
+    Serial.println("Retrying...");
+    delay(200);
+  }
+  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly, default = 0.
+  initSensors();
+}
+
+void loop() 
+{
+  ReadSensors();
+  DisplaySensorValues();
+  SendSensorValues();
+  Serial.print("Delay for: ");
+  Serial.println(SEND_EVERY);
+  Serial.println();
+  delay(SEND_EVERY);
+}
 

@@ -71,65 +71,19 @@ int8_t prevX,prevY,prevZ;                               // keeps track of the ac
 // This boolean value is sent to the cloud using a generic 'Binary Sensor' container. 
 bool wasMoving = false;                                         
 
-void setup() 
+void clearBufferArray()                           // function to clear buffer array
 {
-  accelemeter.init();                                   // accelerometer is always running so we can check when the object is moving around or not
-  SoftSerial.begin(9600); 
-  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
-  Serial.begin(SERIAL_BAUD);
-  Serial1.begin(Modem.getDefaultBaudRate());            // init the baud rate of the serial connection so that it's ok for the modem
-
-  Serial.println("-- Guard your stuff LoRa experiment --");
-  Serial.print("Initializing GPS");
-  while(readCoordinates() == false){
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("Done");
-  Serial.println("Initializing LoRA modem");
-  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
-  {
-    Serial.println("Retrying...");
-    delay(200);
-  }
-  accelemeter.getXYZ(&prevX, &prevY, &prevZ);          // get the current state of the accelerometer so we can use this info in the loop as something to compare against
-  Serial.println("Sending initial state");
-  Device.Send(false, BINARY_SENSOR);
-  Serial.println("Ready to guard your stuff");
-  Serial.println();
+    for (int i=0; i<count;i++) buffer[i]=NULL;    // reset the entire buffer back to 0
+    count = 0;
 }
 
-void loop() 
+//skips a position in the text stream that was received from the gps.
+unsigned char Skip(unsigned char start)
 {
-  if(isMoving() == true)
-  {   
-      if(wasMoving == false)
-      {
-          Serial.println();
-          Serial.println("Movement detected");
-          Serial.println("-----------------");
-          //optional improvement: only turn on the gps when it is used: while the device is moving
-          wasMoving = true;
-          Device.Send(true, BINARY_SENSOR);
-          gpsLastSentAt =  millis();                  // block the 1st transmission of gps data for a short period, so we don't get timeouts from the lib/basestation
-      }
-      if(gpsLastSentAt + GPS_DATA_EVERY < millis()){
-        SendCoordinates();                            // send the coordinates over
-        gpsLastSentAt = millis();
-      }
-  }
-  else if(wasMoving == true)
-  {
-     Serial.println();
-     Serial.println("Movement stopped");
-     Serial.println("----------------");
-    // we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
-    // optional improvement: turn off the gps module
-    wasMoving = false;
-    Device.Send(false, BINARY_SENSOR);
-    SendCoordinates();                               // send over last known coordinates
-  }
-  delay(500);                                        // sample the accelerometer quickly -> not so costly.
+    unsigned char end = start + 1;
+    while(end < count && buffer[end] != ',')       // find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
+        end++;
+    return end+1;
 }
 
 bool isMoving()
@@ -196,6 +150,19 @@ void SendCoordinates()
   Serial.println(timestamp);
 }
 
+// extracts a single value out of the stream received from the device and returns this value.
+float ExtractValue(unsigned char& start)
+{
+    unsigned char end = start + 1;
+    while(end < count && buffer[end] != ',')        // find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
+        end++;
+    buffer[end] = 0;                                // end the string, so we can create a string object from the sub string -> easy to convert to float.
+    float result = 0.0;
+    if(end != start + 1)                            // if we only found a ',', then there is no value.
+        result = String((const char*)(buffer + start)).toFloat();
+    start = end + 1;
+    return result;
+}
 
 //extraxts all the coordinates from the stream that was received from the module 
 //and stores the values in the globals defined at the top of the sketch.
@@ -233,36 +200,68 @@ float ConvertDegrees(float input)
 }
 
 
-// extracts a single value out of the stream received from the device and returns this value.
-float ExtractValue(unsigned char& start)
-{
-    unsigned char end = start + 1;
-    while(end < count && buffer[end] != ',')        // find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
-        end++;
-    buffer[end] = 0;                                // end the string, so we can create a string object from the sub string -> easy to convert to float.
-    float result = 0.0;
-    if(end != start + 1)                            // if we only found a ',', then there is no value.
-        result = String((const char*)(buffer + start)).toFloat();
-    start = end + 1;
-    return result;
-}
-
-//skips a position in the text stream that was received from the gps.
-unsigned char Skip(unsigned char start)
-{
-    unsigned char end = start + 1;
-    while(end < count && buffer[end] != ',')       // find the start of the GPS data -> multiple $GPGGA can appear in 1 line, if so, need to take the last one.
-        end++;
-    return end+1;
-}
-
-void clearBufferArray()                           // function to clear buffer array
-{
-    for (int i=0; i<count;i++) buffer[i]=NULL;    // reset the entire buffer back to 0
-    count = 0;
-}
-
 void serialEvent1()
 {
   Device.Process();                               // for future extensions -> actuators
+}
+
+void setup() 
+{
+  accelemeter.init();                                   // accelerometer is always running so we can check when the object is moving around or not
+  SoftSerial.begin(9600); 
+  while((!Serial) && (millis()) < 2000){}				//wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
+  Serial.begin(SERIAL_BAUD);
+  Serial1.begin(Modem.getDefaultBaudRate());            // init the baud rate of the serial connection so that it's ok for the modem
+
+  Serial.println("-- Guard your stuff LoRa experiment --");
+  Serial.print("Initializing GPS");
+  while(readCoordinates() == false){
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("Done");
+  Serial.println("Initializing LoRA modem");
+  while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
+  {
+    Serial.println("Retrying...");
+    delay(200);
+  }
+  accelemeter.getXYZ(&prevX, &prevY, &prevZ);          // get the current state of the accelerometer so we can use this info in the loop as something to compare against
+  Serial.println("Sending initial state");
+  Device.Send(false, BINARY_SENSOR);
+  Serial.println("Ready to guard your stuff");
+  Serial.println();
+}
+
+void loop() 
+{
+  if(isMoving() == true)
+  {   
+      if(wasMoving == false)
+      {
+          Serial.println();
+          Serial.println("Movement detected");
+          Serial.println("-----------------");
+          //optional improvement: only turn on the gps when it is used: while the device is moving
+          wasMoving = true;
+          Device.Send(true, BINARY_SENSOR);
+          gpsLastSentAt =  millis();                  // block the 1st transmission of gps data for a short period, so we don't get timeouts from the lib/basestation
+      }
+      if(gpsLastSentAt + GPS_DATA_EVERY < millis()){
+        SendCoordinates();                            // send the coordinates over
+        gpsLastSentAt = millis();
+      }
+  }
+  else if(wasMoving == true)
+  {
+     Serial.println();
+     Serial.println("Movement stopped");
+     Serial.println("----------------");
+    // we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
+    // optional improvement: turn off the gps module
+    wasMoving = false;
+    Device.Send(false, BINARY_SENSOR);
+    SendCoordinates();                               // send over last known coordinates
+  }
+  delay(500);                                        // sample the accelerometer quickly -> not so costly.
 }
