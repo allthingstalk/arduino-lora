@@ -35,12 +35,13 @@
  * 
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <Sodaq_TPH.h>
 #include "AirQuality2.h"
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 
 #define SERIAL_BAUD 57600
@@ -53,6 +54,7 @@
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 AirQuality2 airqualitysensor;
 
 float soundValue;
@@ -61,6 +63,7 @@ float temp;
 float hum;
 float pres;
 short airValue;
+unsigned long sendNextAt = 0;
 
 
 
@@ -95,51 +98,52 @@ void SendSensorValues()
     Serial.println("Start uploading data to the ATT cloud Platform");
     Serial.println("----------------------------------------------");
     Serial.println("Sending sound value... ");
-    Device.Send(soundValue, LOUDNESS_SENSOR);
+    payload.Send(soundValue, LOUDNESS_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
     Serial.println("Sending light value... "); 
-    Device.Send(lightValue, LIGHT_SENSOR);
+    payload.Send(lightValue, LIGHT_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
     Serial.println("Sending temperature value... ");
-    Device.Send(temp, TEMPERATURE_SENSOR);
+    payload.Send(temp, TEMPERATURE_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
     Serial.println("Sending humidity value... ");  
-    Device.Send(hum, HUMIDITY_SENSOR);
+    payload.Send(hum, HUMIDITY_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
     Serial.println("Sending pressure value... ");  
-    Device.Send(pres, PRESSURE_SENSOR);
+    payload.Send(pres, PRESSURE_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
     Serial.println("Sending air quality value... ");  
-    Device.Send(airValue, AIR_QUALITY_SENSOR);
+    payload.Send(airValue, AIR_QUALITY_SENSOR);
+	Device.ProcessQueuePopFailed();						//flush buffer asap,  otherwise it will fill up rather quickly
 }
 
 void DisplaySensorValues()
 {
-    Serial.print("Sound level: ");
-    Serial.print(soundValue);
-	  Serial.println(" Analog (0-1023)");
-      
-    Serial.print("Light intensity: ");
-    Serial.print(lightValue);
-	  Serial.println(" Lux");
-      
-    Serial.print("Temperature: ");
-    Serial.print(temp);
-	  Serial.println(" °C");
-      
-    Serial.print("Humidity: ");
-    Serial.print(hum);
-	  Serial.println(" %");
-      
-    Serial.print("Pressure: ");
-    Serial.print(pres);
-	  Serial.println(" hPa");
-  
-    Serial.print("Air quality: ");
-    Serial.print(airValue);
-	  Serial.println(" Analog (0-1023)");
+	Serial.print("Sound level: ");
+	Serial.print(soundValue);
+	Serial.println(" Analog (0-1023)");
+
+	Serial.print("Light intensity: ");
+	Serial.print(lightValue);
+	Serial.println(" Lux");
+
+	Serial.print("Temperature: ");
+	Serial.print(temp);
+	Serial.println(" °C");
+
+	Serial.print("Humidity: ");
+	Serial.print(hum);
+	Serial.println(" %");
+
+	Serial.print("Pressure: ");
+	Serial.print(pres);
+	Serial.println(" hPa");
+
+	Serial.print("Air quality: ");
+	Serial.print(airValue);
+	Serial.println(" Analog (0-1023)");
 }
 
-
-void serialEvent1()
-{
-    Device.Process();                           //for future use of actuators
-}
 
 void setup() 
 {
@@ -158,18 +162,21 @@ void setup()
     Serial.println("Retrying...");
     delay(200);
   }
-  Device.SetMinTimeBetweenSend(15000);                          // wait between sending 2 messages, to make certain that the base station doesn't punish us for sending too much data too quickly, default = 0.
   initSensors();
 }
 
+
 void loop() 
 {
-  ReadSensors();
-  DisplaySensorValues();
-  SendSensorValues();
-  Serial.print("Delay for: ");
-  Serial.println(SEND_EVERY);
-  Serial.println();
-  delay(SEND_EVERY);
+	if (sendNextAt < millis()){
+		ReadSensors();
+		DisplaySensorValues();
+		SendSensorValues();
+		Serial.print("Delay for: ");
+		Serial.println(SEND_EVERY);
+		Serial.println();
+		sendNextAt = millis() + SEND_EVERY;
+	}
+	Device.ProcessQueuePopFailed();
 }
 

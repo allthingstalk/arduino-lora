@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,11 +37,12 @@
  * 
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <Sodaq_TPH.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
@@ -49,6 +50,7 @@ int doorSensor = 4;
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 bool currentDoorValue;
 bool alertSent = false;
@@ -131,7 +133,7 @@ void sendDoorSensor(bool val)
 {
   if(val) Serial.println("** Alert: Container door is opened!");
   else Serial.println("** Container door is closed");
-  Device.Send(val, DOOR_SENSOR); 
+  payload.Send(val, DOOR_SENSOR); 
 }
 
 void sendTPHSensor()
@@ -139,17 +141,17 @@ void sendTPHSensor()
   if(TPHState == 0)
   {
     Serial.println("Sending TPH Temperature value");
-    Device.Send(temp, TEMPERATURE_SENSOR);
+    payload.Send(temp, TEMPERATURE_SENSOR);
   }
   else if(TPHState == 1)
   {
     Serial.println("Sending TPH Humidity value");
-    Device.Send(hum, HUMIDITY_SENSOR);
+    payload.Send(hum, HUMIDITY_SENSOR);
   }
   else if(TPHState == 2)
   {
     Serial.println("Sending TPH Pressure value");
-    Device.Send(pres, PRESSURE_SENSOR);
+    payload.Send(pres, PRESSURE_SENSOR);
   }
 }
 
@@ -206,17 +208,6 @@ void loop()
     sendDoorSensor(true);    								// Door is opened!
     sentOnce = true;
   }
-  
+  Device.ProcessQueuePopFailed();
   delay(100);
-}
-
-
-
-/************************************************************************************
- * Callback for future actuators
- */
- 
-void serialEvent1()
-{
-  Device.Process();
 }

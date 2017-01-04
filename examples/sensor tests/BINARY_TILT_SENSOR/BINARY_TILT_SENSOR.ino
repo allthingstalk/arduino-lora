@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,16 +30,18 @@
  *  
  **/
 
-#include <Wire.h>
-#include <ATT_LoRa_IOT.h>
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                                        // digital Sensor is connected to pin D20/D21
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 void setup() 
 {
@@ -63,20 +65,15 @@ void loop()
 	   Serial.println("Switched!");
      Serial.println();
   }
-  delay(100);
+  Device.ProcessQueuePopFailed();
 }
 
 void SendValue(bool val)
 {
   Serial.print("New value: ");
   Serial.println(val);
-  Device.Send(val, BINARY_TILT_SENSOR);
+  payload.Send(val, BINARY_TILT_SENSOR);
 }
 
-
-void serialEvent1()
-{
-  Device.Process();                                   // for future use of actuators
-}
 
 

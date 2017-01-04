@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,16 +30,18 @@
  *  
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <SoftwareSerial.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 // reading GPS values from serial connection with GPS
 SoftwareSerial SoftSerial(20, 21);
@@ -64,18 +66,15 @@ float timestamp;
 
 void loop() 
 {
-  if(readCoordinates() == true)
+  if(readCoordinates() == true){
     SendValue();
-  delay(3000);
+	delay(3000);
+  }
+  Device.ProcessQueuePopFailed();
 }
 
 void SendValue()
 {
-  Device.Queue(latitude);
-  Device.Queue(longitude);
-  Device.Queue(altitude);
-  Device.Queue(timestamp);
-  Device.Send(GPS);
   Serial.print("Coordinates: ");
   Serial.print(latitude, 4);
   Serial.print(",");
@@ -85,6 +84,8 @@ void SendValue()
   Serial.print("Timestamp: ");
   Serial.println(timestamp);
   Serial.println();
+  payload.Send(latitude, longitude, altitude, timestamp, GPS);
+  Device.ProcessQueuePopFailed();					//ask to do the send asap, otherwise, we are waiting for 3 sec (see main loop)
 }
 
 bool readCoordinates()
@@ -167,9 +168,5 @@ void clearBufferArray()                     // function to clear buffer array
     { buffer[i]=NULL;}                      // clear all index of array with command NULL
 }
 
-void serialEvent1()
-{
-  Device.Process();                         // for future use of actuators
-}
 
 

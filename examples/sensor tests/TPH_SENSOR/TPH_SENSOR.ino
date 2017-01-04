@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,11 +30,12 @@
  *  
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <Sodaq_TPH.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 
 #define SERIAL_BAUD 57600
@@ -42,6 +43,7 @@
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 
 void setup() 
@@ -53,46 +55,46 @@ void setup()
   Serial.println("Ready to send data");  
 }
 
+
+unsigned long sendNextAt = 0;
+
 void loop() 
 {
-  float temp = tph.readTemperature();
-  float bmp_temp = tph.readTemperatureBMP();
-  float sht_temp = tph.readTemperatureSHT();
-  float hum = tph.readHumidity();
-  float pres = tph.readPressure()/100.0;
-  
-  Serial.print("Temperature: ");
-  Serial.print(temp);
-  Serial.println(" °C");
-  
-  Serial.print("Temperature (BMP sensor): ");
-  Serial.print(bmp_temp);
-  Serial.println(" °C");
-  
-  Serial.print("Temperature (SHT sensor): ");
-  Serial.print(sht_temp);
-  Serial.println(" °C");
-  
-  Serial.print("Humidity: ");
-  Serial.print(hum);
-  Serial.println(" %");
-  
-  Serial.print("Pressure: ");
-  Serial.print(pres);
-  Serial.println(" hPa");
-  Serial.println();
+	if (sendNextAt < millis()){
+		float temp = tph.readTemperature();
+		float bmp_temp = tph.readTemperatureBMP();
+		float sht_temp = tph.readTemperatureSHT();
+		float hum = tph.readHumidity();
+		float pres = tph.readPressure()/100.0;
 
-  Device.Send(temp, TEMPERATURE_SENSOR);
-  Device.Send(hum, HUMIDITY_SENSOR);
-  Device.Send(pres, PRESSURE_SENSOR);
-  
-  delay(3000);
+		Serial.print("Temperature: ");
+		Serial.print(temp);
+		Serial.println(" °C");
+
+		Serial.print("Temperature (BMP sensor): ");
+		Serial.print(bmp_temp);
+		Serial.println(" °C");
+
+		Serial.print("Temperature (SHT sensor): ");
+		Serial.print(sht_temp);
+		Serial.println(" °C");
+
+		Serial.print("Humidity: ");
+		Serial.print(hum);
+		Serial.println(" %");
+
+		Serial.print("Pressure: ");
+		Serial.print(pres);
+		Serial.println(" hPa");
+		Serial.println();
+
+		payload.Send(temp, TEMPERATURE_SENSOR);
+		payload.Send(hum, HUMIDITY_SENSOR);
+		payload.Send(pres, PRESSURE_SENSOR);
+		sendNextAt = millis() + 120000;
+	}
+	Device.ProcessQueuePopFailed();
 }
 
-
-void serialEvent1()
-{
-  Device.Process();														// for future use of actuators
-}
 
 

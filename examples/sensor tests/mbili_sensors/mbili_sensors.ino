@@ -1,7 +1,7 @@
 /*
 AllThingsTalk - LoRa Arduino demos
 
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@ AllThingsTalk - LoRa Arduino demos
 Original author: Jan Bogaerts (2015)
 */
 
-#include <Wire.h>
-#include "ATT_Lora_IOT.h"
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
-//#include "EmbitLoRaModem.h"
-#include "MicrochipLoRaModem.h"
+#include <MicrochipLoRaModem.h>
+#include <Container.h>
 #include <Sodaq_DS3231.h>
 
 //These constants are used for reading the battery voltage
@@ -34,6 +34,7 @@ Original author: Jan Bogaerts (2015)
 //EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 
 
@@ -41,6 +42,7 @@ void setup()
 {
 	Serial.begin(SERIAL_BAUD);
 	Serial1.begin(Modem.getDefaultBaudRate());					//init the baud rate of the serial connection so that it's ok for the modem
+	while((!Serial) && (millis()) < 30000){}            //wait until serial bus is available, so we get the correct logging on screen. If no serial, then blocks for 2 seconds before run
 	Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
 	Serial.println("starting");
 }
@@ -56,37 +58,35 @@ float getRealBatteryVoltage()
   return (ADC_AREF / 1023.0) * (BATVOLT_R1 + BATVOLT_R2) / BATVOLT_R2 * batteryVoltage;
 } 
 
+unsigned long sendNextAt = 0;
 
 void loop() 
 {
-	//Read the temperature and display it on the OLED
-	rtc.convertTemperature();            
-	int temp = rtc.getTemperature();
-  
-    //Read the voltage and display it on the OLED
-	float mv = getRealBatteryVoltage() * 1000.0;
-	mv = mapfloat(mv,2.2, BATVOLT_R1, 0, 100);
+	if (sendNextAt < millis()){
+		//Read the temperature and display it on the OLED
+		rtc.convertTemperature();            
+		int temp = rtc.getTemperature();
+	  
+		//Read the voltage and display it on the OLED
+		float mv = getRealBatteryVoltage() * 1000.0;
+		mv = mapfloat(mv,2.2, BATVOLT_R1, 0, 100);
 
-	//Display the temperature reading
-	Serial.print("Temp=");
-	Serial.print(temp);
-	Serial.println('c');
+		//Display the temperature reading
+		Serial.print("Temp=");
+		Serial.print(temp);
+		Serial.println('c');
 
-	//Display the voltage reading
-	Serial.print("Volts=");
-	Serial.print(mv);
-	Serial.println("v");
-	
-	Device.Send((float)temp, TEMPERATURE_SENSOR);
-	Device.Send(mv, BATTERY_LEVEL);
-	
-	delay(1000);
+		//Display the voltage reading
+		Serial.print("Volts=");
+		Serial.print(mv);
+		Serial.println("v");
+		
+		payload.Send((float)temp, TEMPERATURE_SENSOR);
+		payload.Send(mv, BATTERY_LEVEL);
+		sendNextAt = millis() + 15000;
+	}
+	Device.ProcessQueuePopFailed();
 }
 
 
-
-void serialEvent1()
-{
-  Device.Process();														//for future extensions -> actuators
-}
 

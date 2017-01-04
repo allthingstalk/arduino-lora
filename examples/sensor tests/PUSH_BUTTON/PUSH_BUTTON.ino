@@ -34,12 +34,14 @@
 #include <ATT_LoRa_IOT.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                                        // digital sensor is connected to pin D20/21
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 
 void setup() 
@@ -63,19 +65,14 @@ void loop()
 		sensorVal = sensorRead;
 		SendValue(sensorRead);
 	}
-	delay(100);
+	Device.ProcessQueuePopFailed();
 }
 
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PUSH_BUTTON);
+  payload.Send(val, PUSH_BUTTON);
 }
 
-
-void serialEvent1()
-{
-  Device.Process();														// for future use of actuators
-}
 
 

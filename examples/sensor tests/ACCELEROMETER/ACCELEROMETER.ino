@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,11 +30,12 @@
  *  
  **/
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <MMA7660.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
@@ -42,6 +43,7 @@
 MMA7660 accelemeter;                                  // connect to the I2C port (SCL/SDA)
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 void setup() 
 {
@@ -58,21 +60,21 @@ int8_t x,y,z;
 
 void loop() 
 {
-  accelemeter.getXYZ(&x, &y, &z);
-  Serial.println("Values");
-  Serial.print("  x: ");
-  Serial.println(x);
-  Serial.print("  y: ");
-  Serial.println(y);
-  Serial.print("  z: ");
-  Serial.println(z);
+	accelemeter.getXYZ(&x, &y, &z);
+	Serial.println("Values");
+	Serial.print("  x: ");
+	Serial.println(x);
+	Serial.print("  y: ");
+	Serial.println(y);
+	Serial.print("  z: ");
+	Serial.println(z);
   
-  accelemeter.getAcceleration(&accx, &accy, &accz);
-  Serial.println("Accleration");
-  Serial.print("  x: ");
+	accelemeter.getAcceleration(&accx, &accy, &accz);
+	Serial.println("Accleration");
+	Serial.print("  x: ");
 	Serial.print(accx);
-  Serial.println(" g");
-  Serial.print("  y: ");
+	Serial.println(" g");
+	Serial.print("  y: ");
 	Serial.print(accy);
 	Serial.println(" g");
 	Serial.print("  z: ");
@@ -80,23 +82,11 @@ void loop()
 	Serial.println(" g");
 	Serial.println();
 
-  SendValue();
-  
-  delay(1000);
+	payload.Send(accx, accy, accz, ACCELEROMETER);
+
+	delay(2000);
+	Device.ProcessQueuePopFailed();
 }
 
-void SendValue()
-{
-  Device.Queue(accx);
-  Device.Queue(accy);
-  Device.Queue(accz);
-  Device.Send(ACCELEROMETER);
-}
-
-
-void serialEvent1()
-{
-  Device.Process();														// for future use of actuators
-}
 
 

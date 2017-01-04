@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@
  **  
  */
 
-#include <Wire.h>
-#include <ATT_LoRa_IOT.h>
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
@@ -41,6 +42,7 @@
 int DigitalSensor = 20;                                        // digital sensor is connected to pin D20/21 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 
 void setup() 
@@ -57,28 +59,22 @@ bool sensorVal = true;
 
 void loop() 
 {
-  bool sensorRead = digitalRead(DigitalSensor);		     // read status of digital sensor
-  if (sensorVal != sensorRead) 				                 // verify if value has changed
-  {
-     sensorVal = sensorRead;
-	   SendValue(sensorRead);
-	   if(sensorVal == true)
-       Serial.println("Movement = true");
-	   else
-       Serial.println("Movement = false");
-  }
-  delay(100);
+	bool sensorRead = digitalRead(DigitalSensor);		     // read status of digital sensor
+	if (sensorVal != sensorRead) 				                 // verify if value has changed
+	{
+		sensorVal = sensorRead;
+		SendValue(sensorRead);
+		if(sensorVal == true)
+			Serial.println("Movement = true");
+		else
+			Serial.println("Movement = false");
+	}
+	Device.ProcessQueuePopFailed();
 }
 
 void SendValue(bool val)
 {
   Serial.println(val);
-  Device.Send(val, PIR_SENSOR);
-}
-
-
-void serialEvent1()
-{
-  Device.Process();                                    // for future use of actuators
+  payload.Send(val, PIR_SENSOR);
 }
 

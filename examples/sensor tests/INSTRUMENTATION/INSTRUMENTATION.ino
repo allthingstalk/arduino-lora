@@ -31,15 +31,16 @@
  **/
  
 #include <Wire.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <InstrumentationPacket.h>
 
 #define SERIAL_BAUD 57600
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
-
+InstrumentationPacket payload(Device, &Serial);
 
 void setup() 
 {
@@ -52,15 +53,12 @@ void setup()
 
 void loop() 
 {
-  Device.SendInstrumentation();
-  delay(15000);
+	payload.BuildInstrumentation(Modem);
+	payload.Send();
+	delay(15000);
 }
 
 
-void serialEvent1()
-{
-  Device.Process();                                    // for future use of actuators
-}
 
 
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@
 
 
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <SoftwareSerial.h>
 #include <MMA7660.h>
-#include <ATT_LoRa_IOT.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 #define MOVEMENTTRESHOLD 12                             // amount of movement that can be detected before being considered as really moving (jitter on the accelerometer, vibrations)
@@ -53,6 +54,7 @@ long gpsLastSentAt = 0;                                 // keeps track of the la
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 MMA7660 accelemeter;
 SoftwareSerial SoftSerial(20, 21);                      // reading GPS values from serial connection with GPS
@@ -135,11 +137,7 @@ void SendCoordinates()
   }
   Serial.println();
          
-  Device.Queue(latitude);
-  Device.Queue(longitude);
-  Device.Queue(altitude);
-  Device.Queue(timestamp);
-  Device.Send(GPS);
+  payload.Send(latitude, longitude, altitude, timestamp, GPS);
   Serial.print("lng: ");
   Serial.print(longitude, 4);
   Serial.print(", lat: ");
@@ -200,11 +198,6 @@ float ConvertDegrees(float input)
 }
 
 
-void serialEvent1()
-{
-  Device.Process();                               // for future extensions -> actuators
-}
-
 void setup() 
 {
   accelemeter.init();                                   // accelerometer is always running so we can check when the object is moving around or not
@@ -228,7 +221,7 @@ void setup()
   }
   accelemeter.getXYZ(&prevX, &prevY, &prevZ);          // get the current state of the accelerometer so we can use this info in the loop as something to compare against
   Serial.println("Sending initial state");
-  Device.Send(false, BINARY_SENSOR);
+  payload.Send(false, BINARY_SENSOR);
   Serial.println("Ready to guard your stuff");
   Serial.println();
 }
@@ -244,7 +237,7 @@ void loop()
           Serial.println("-----------------");
           //optional improvement: only turn on the gps when it is used: while the device is moving
           wasMoving = true;
-          Device.Send(true, BINARY_SENSOR);
+          payload.Send(true, BINARY_SENSOR);
           gpsLastSentAt =  millis();                  // block the 1st transmission of gps data for a short period, so we don't get timeouts from the lib/basestation
       }
       if(gpsLastSentAt + GPS_DATA_EVERY < millis()){
@@ -260,8 +253,9 @@ void loop()
     // we don't need to send coordinates when the device has stopped moving -> they will always be the same, so we can save some power.
     // optional improvement: turn off the gps module
     wasMoving = false;
-    Device.Send(false, BINARY_SENSOR);
+    payload.Send(false, BINARY_SENSOR);
     SendCoordinates();                               // send over last known coordinates
   }
+  Device.ProcessQueuePopFailed();
   delay(500);                                        // sample the accelerometer quickly -> not so costly.
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@
  *  
  **/
 
-#include <Wire.h>
-#include <ATT_LoRa_IOT.h>
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
@@ -42,6 +43,7 @@
 
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 void setup() 
 {
@@ -64,21 +66,18 @@ void loop()
   if((int)value != Rsensor){			// we round the value so we don't send too many value changes
     value = Rsensor;
     SendValue();
+	delay(3000);
   }
-  delay(3000);
+  Device.ProcessQueuePopFailed();
 }
 
 void SendValue()
 {
   Serial.print("Sending value: ");
   Serial.println(value);
-  Device.Send(value, LIGHT_SENSOR);
+  payload.Send(value, LIGHT_SENSOR);
 }
 
 
-void serialEvent1()
-{
-  Device.Process();														// for future use of actuators
-}
 
 

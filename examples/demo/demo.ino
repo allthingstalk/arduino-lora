@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,18 +28,18 @@
  *  For more information, please check our documentation
  *  -> http://allthingstalk.com/docs/tutorials/lora/setup
  */
-#include <Wire.h>
-#include <ATT_LoRa_IOT.h>
-//#include "EmbitLoRaMode.h"
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 #include "keys.h"
 
 #define SERIAL_BAUD 57600
 
 int DigitalSensor = 20;                              // pin this sensor is connected to
-//EmbitLoRaModem Modem(&Serial1);
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 bool sensorVal = false;
 bool prevButtonState = false;
@@ -52,7 +52,6 @@ void setup()
   Serial1.begin(Modem.getDefaultBaudRate());   			// set baud rate of the serial connection between Mbili and LoRa modem
   while(!Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY))
 	Serial.println("retrying...");						// initialize connection with the AllThingsTalk Developer Cloud
-  //Device.SetMinTimeBetweenSend(1000);					//uncomment this line if the device has to block when messages are sent too quickly, default = 0
   Serial.println("Ready to send data");
 
   sensorVal = digitalRead(DigitalSensor);
@@ -70,18 +69,15 @@ void loop()
 	}
 	else if(sensorRead == 0)
 		prevButtonState = false;
+	Device.ProcessQueuePopFailed();
 }
 
 bool SendValue(bool val)
 {
   Serial.print("Data: ");Serial.println(val);
-  bool res = Device.Send(val, BINARY_SENSOR);
+  bool res = payload.Send(val, BINARY_SENSOR);
   if(res == false)
     Serial.println("maybe the last couple of packages were sent too quickly after each other? (min of 15 seconds recommended)");
   return res;
 }
 
-void serialEvent1()
-{
-  Device.Process();														//for future extensions -> actuators
-}

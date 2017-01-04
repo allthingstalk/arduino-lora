@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2016 AllThingsTalk
+   Copyright 2015-2017 AllThingsTalk
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,10 +38,11 @@
  *
  **/
 
-#include <Wire.h>
-#include <ATT_LoRa_IOT.h>
+//#include <Wire.h>
+#include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
+#include <Container.h>
 
 #define SERIAL_BAUD 57600
 
@@ -49,6 +50,7 @@ int pushButton = 20;
 int doorSensor = 4;
 MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
+Container payload(Device);
 
 #define SEND_MAX_EVERY 30000                                // the mimimum time between 2 consecutive updates of visit counts that are sent to the cloud (can be longer, if the value hasn't changed)
 
@@ -91,7 +93,7 @@ void tryConnect()
 void sendVisitCount()
 {
   Serial.print("Send visit count: ");Serial.println(visitCount);
-  Device.Send(visitCount, INTEGER_SENSOR);                 // always send visit count to keep the cloud in sync with the device
+  payload.Send(visitCount, INTEGER_SENSOR);                 // always send visit count to keep the cloud in sync with the device
   prevVisitCountSent = visitCount;
   lastSentAt = millis();
 }
@@ -130,27 +132,18 @@ void processButton()
   }
 }
 
-void SendValue(bool val)
-{
-  Serial.println(val);
-  
-}
 
-
-void serialEvent1()
-{
-  Device.Process();                                     // for future extensions -> actuators
-}
 
 
 void loop() 
 {
-  if(isConnected == false)                                  // retry connecting if needed while already counting visits locally
-    tryConnect();
-  processButton();
-  processDoorSensor();
-  delay(100);
-  if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())	// only send a message when something has changed and SEND_MAX_EVERY has been exceeded
-    sendVisitCount();
+	if(isConnected == false)                                  // retry connecting if needed while already counting visits locally
+		tryConnect();
+	processButton();
+	processDoorSensor();
+	delay(100);
+	if(isConnected && prevVisitCountSent != visitCount && lastSentAt + SEND_MAX_EVERY <= millis())	// only send a message when something has changed and SEND_MAX_EVERY has been exceeded
+		sendVisitCount();
+	Device.ProcessQueuePopFailed();
 }
 
