@@ -58,7 +58,7 @@ Container payload(Device);
 
 MMA7660 accelemeter;
 SoftwareSerial SoftSerial(20, 21);                      // reading GPS values from serial connection with GPS
-unsigned char buffer[64];                               // buffer array for data receive over serial port
+unsigned char buffer[65];                               // buffer array for data receive over serial port
 int count=0;  
 
 // Variables for the coordinates (GPS)
