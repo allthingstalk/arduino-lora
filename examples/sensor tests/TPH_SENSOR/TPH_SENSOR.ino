@@ -31,7 +31,7 @@
  **/
 
 //#include <Wire.h>
-#include <Sodaq_TPH.h>
+#include <Adafruit_BME280.h>
 #include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
 #include <MicrochipLoRaModem.h>
@@ -45,10 +45,15 @@ MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
 Container payload(Device);
 
+Adafruit_BME280 bme; // I2C
+
 
 void setup() 
 {
-  tph.begin();                                        // connect TPH sensor to the I2C pin (SCL/SDA)
+  if (!bme.begin()) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
+  }                                      // connect TPH sensor to the I2C pin (SCL/SDA)
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(Modem.getDefaultBaudRate());					// init the baud rate of the serial connection so that it's ok for the modem
   Device.Connect(DEV_ADDR, APPSKEY, NWKSKEY);
@@ -61,23 +66,14 @@ unsigned long sendNextAt = 0;
 void loop() 
 {
 	if (sendNextAt < millis()){
-		float temp = tph.readTemperature();
-		float bmp_temp = tph.readTemperatureBMP();
-		float sht_temp = tph.readTemperatureSHT();
-		float hum = tph.readHumidity();
-		float pres = tph.readPressure()/100.0;
+		float temp = bme.readTemperature();
+		float hum = bme.readHumidity();
+		float pres = bme.readPressure()/100.0;
 
 		Serial.print("Temperature: ");
 		Serial.print(temp);
 		Serial.println(" °C");
 
-		Serial.print("Temperature (BMP sensor): ");
-		Serial.print(bmp_temp);
-		Serial.println(" °C");
-
-		Serial.print("Temperature (SHT sensor): ");
-		Serial.print(sht_temp);
-		Serial.println(" °C");
 
 		Serial.print("Humidity: ");
 		Serial.print(hum);

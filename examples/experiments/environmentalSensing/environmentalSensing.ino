@@ -36,7 +36,7 @@
  **/
 
 //#include <Wire.h>
-#include <Sodaq_TPH.h>
+#include <Adafruit_BME280.h>
 #include "AirQuality2.h"
 #include <ATT_IOT_LoRaWAN.h>
 #include "keys.h"
@@ -56,6 +56,7 @@ MicrochipLoRaModem Modem(&Serial1, &Serial);
 ATTDevice Device(&Modem, &Serial);
 Container payload(Device);
 AirQuality2 airqualitysensor;
+Adafruit_BME280 bme; // I2C
 
 float soundValue;
 float lightValue;
@@ -72,7 +73,10 @@ void initSensors()
     Serial.println("Initializing sensors, this can take a few seconds...");
     pinMode(SoundSensorPin,INPUT);
     pinMode(LightSensorPin,INPUT);
-    tph.begin();
+    if (!bme.begin()) {
+		Serial.println("Could not find a valid BME280 sensor, check wiring!");
+		while (1);
+	}
     airqualitysensor.init(AirQualityPin);
     Serial.println("Done");
 }
