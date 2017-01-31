@@ -164,6 +164,8 @@ float ExtractValue(unsigned char& start)
 
 //extraxts all the coordinates from the stream that was received from the module 
 //and stores the values in the globals defined at the top of the sketch.
+//content of $GPGGA message:
+//$GPGGA,timestamp,lat,N/S,lon,E/W,
 bool ExtractValues()
 {
     unsigned char start = count;
@@ -178,8 +180,12 @@ bool ExtractValues()
         start+=6;
         timestamp = ExtractValue(start);
         latitude = ConvertDegrees(ExtractValue(start) / 100);
+		if (buffer[start] == 'S')
+			latitude = -latitude;
         start = Skip(start);    
         longitude = ConvertDegrees(ExtractValue(start)  / 100);
+		if (buffer[start] == 'W')
+			longitude = -longitude;
         start = Skip(start);
         start = Skip(start);
         start = Skip(start);
