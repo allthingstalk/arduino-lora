@@ -90,9 +90,9 @@ void ReadSensors()
     lightValue = lightValue * 3.3 / 1023;         // convert to lux, this is based on the voltage that the sensor receives
     lightValue = pow(10, lightValue);
     
-    temp = tph.readTemperature();
-    hum = tph.readHumidity();
-    pres = tph.readPressure()/100.0;
+    temp = bme.readTemperature();
+    hum = bme.readHumidity();
+    pres = bme.readPressure()/100.0;
     
     airValue = airqualitysensor.getRawData();
 }
