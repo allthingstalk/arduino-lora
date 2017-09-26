@@ -1,6 +1,9 @@
 arduino-client
 ==============
 
+> This library is **deprecated**. Please use our [arduino-lorawan-sdk](https://github.com/allthingstalk/arduino-lorawan-sdk) instead.
+Examples for our Rapid Development Kit and Track and Trace Product kit can be found in the respective repositories [arduino-lorawan-rdk](https://github.com/allthingstalk/arduino-lorawan-rdk) and [arduino-lorawan-pdk](https://github.com/allthingstalk/arduino-lorawan-pdk)
+
 This is a library for the AllThingsTalk ‘Internet of Things’ platform that provides connectivity to the cloud through [LoRa radios](https://www.lora-alliance.org/What-Is-LoRa/Technology).  
 
 This library has been developed for the folowing hardware:
