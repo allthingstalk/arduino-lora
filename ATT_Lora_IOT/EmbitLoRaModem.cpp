@@ -58,7 +58,7 @@ bool EmbitLoRaModem::SetLoRaWan(bool adr)
 	if(adr == true)
 		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET));
 	else
-		SendPacket(CMD_LORA_PRVNET, sizeof(CMD_LORA_PRVNET_NO_ADR));
+		SendPacket(CMD_LORA_PRVNET_NO_ADR, sizeof(CMD_LORA_PRVNET_NO_ADR));
 	return ReadPacket();
 }
 
